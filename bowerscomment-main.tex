@@ -1,0 +1,66 @@
+\documentclass[12pt]{article}
+\usepackage{parskip}
+\usepackage{natbib}
+\bibliographystyle{apsr}
+
+\title{Assessing Methods for Pattern Discovery}
+\author{Jake Bowers}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+Automated pattern discovery is changing the world. Algorithms predict our
+preferences for movies and other products. And the same general methods allow
+cars to drive themselves, and for our financial markets to be dominated by
+trades between automated agents rather than humans. Why should we not focus
+the attention of machine learners on social science problems? The
+methodologists developing QCA are animated by the same general sense that
+algorithms can improve on human pattern recognition. And they are surely
+correct in their intuition. Yet, \citet{lucasfk2013} show that the specific
+algorithms of QCA (and variants) fail to discover patterns that exist and may
+misleadingly identify phantom patterns. Of course, most algorithms are useful
+for some purpose. When should variants of QCA succeed? And when should a
+researcher choose another of the many possible tools for prediction and
+discovery? More generally, in a world in which new techniques for machine
+learning arise daily, how should social scientists decide which to use? On
+what basis should we judge a method for pattern discovery? Here is a simple
+proposal.
+
+Any useful method for pattern discovery should find true patterns much more
+frequently than it finds false patterns. How would we assess the pattern
+finding abilities of a method? The best option, from my point of view, would
+involve a competition among scholars: One scholar would invent a true pattern
+and others would be challenged to discover the known but hidden truth.
+Imagine, for example, that the task would be identify which function of
+possibly 100 $X$ variables predicts a binary outcome, but the truth would
+involve a known function of 5 of those variables (perhaps not a linear
+function of any one of them, and perhaps allowing all to interact in complex
+ways). Each player would receive a dataset with some number of rows (say, 10
+rows, each row representing one unit) and 100 columns (each column
+representing a variable). One version of the game would restrict participants to use one
+algorithm (like QCA). A second version would allow participants to choose
+their own algorithm (for example, some would use random forests
+\cite{breiman2001random} and others would use QCA and yet others would use an
+adaptive elastic net \citet{zou2009adaptive,zou2006adaptive}). In the first
+version of the competition, we would learn from the winners of the competition
+about how to successfully use a given method. In the second version of the
+game, we would learn about how different methods compare in their ability to
+address a given problem. 
+
+If, however, time were short, one could approximate such game by following the
+lead of the burgeoning field of machine learning and of
+\citet{lucasf2013}.\footnote{And excellent, and free to download, overview of
+	many of the techniques of machine learning is \citet{hastie2005elements}.}
+That is, we could generate our true relationship and compare the effectiveness
+of different machine learners both across different versions of the truth  and
+different techniques for pattern finding. 
+
+
+
+
+
+
+
+\end{document}
+\bibliography{/Users/jwbowers/Documents/PROJECTS/BIB/big.bib}
