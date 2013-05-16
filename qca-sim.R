@@ -8,10 +8,6 @@ library(parallel)
 library(data.table) ## trying this out for speed
 
 numcores<-detectCores()
-nsims<-200*numcores
-ntruevars<-5
-ntotalvars<-20
-N<-10
 
 set.seed(20130516)
 makedatamatrix<-function(ntotalvars,N){
@@ -34,11 +30,16 @@ makemodelmatrix<-function(thedata,interaction.order){
   model.matrix(as.formula(paste("~(-1+.)^",interaction.order,sep="")),data=thedata)
 }
 
+### Setup data. Some routines want matrices others want data.frames
+nsims<-200*numcores
+ntotalvars<-20
+N<-15
 thedata<-makedatamatrix(ntotalvars,N)
-theX<-makemodelmatrix(thedata,4)
-thetruth<-"V1*V2*V3 | V3*V4 | V5"
+theX<-makemodelmatrix(thedata,3)
+thetruth<-"V1*V2*V3 | V4*V5"
 theY<-makeoutcome(thedata,thetruth)
 
+## Some functions fail if we substitute data.table class objects for data.frame objects.
 thedf<-data.frame(thedata)
 thedf$Y<-theY
 
@@ -66,18 +67,22 @@ myfn<-function(y,X,DAT){
 
   ## Random Forest
 
-  forest<-randomForest(x=DAT[,-1],y = as.factor(Y),
-                     mtry = sqrt(ncol(Dat)-1),
-                     ntree = 1000,importance=TRUE,norm.votes=TRUE,keep.forest=TRUE)
+  forest<-randomForest(x=thedata, y = as.factor(theY),
+                     ntree = 1000, importance=TRUE,
+                     proximity=TRUE,
+                     norm.votes=TRUE, keep.forest=TRUE)
 
   ## Record whether the truth was found.
+truthparts<-gsub("\\s","",strsplit(thetruth,"|",fixed=TRUE)[[1]])
 
-  ## Estimate models with intercepts (for now) but exclude them
-  ## from consideration [perhaps wrong].
-  lassofound<-all(row.names(thelasso.coef)[thelasso.coef[,1]!=0][-1] %in% c('X1:X2','X3:X4'))
-  ## Are both of the largest coefs for the two two-way interactions?
-  firthfound<-all(names(sort(coef(theglm)[-1],decreasing=TRUE)[1:2]) %in% c('X1:X2','X3:X4'))
-  qcafound<-all(theqca$PIs %in% c('X1*X2','X3*X4'))
+## Did the adaptive lasso return non-zero coefs for the truth and only the truth?
+  lassofound<-all(row.names(thelasso.coef)[thelasso.coef[,1]!=0][-1] %in% gsub("*",":",truthparts,fixed=TRUE) )
+
+## Did QCA return the truth and only the truth?
+qcafound<-all(theqca$PIs %in% truthparts)
+
+## Did randomForest return the truth and only the truth?
+
 
   return(c(qcafound=qcafound,firthfound=firthfound,lassofound=lassofound))
 }
