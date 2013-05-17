@@ -1,9 +1,10 @@
 
 library(brglm)
 library(QCA)
-library(QCA3) ## reduce()
+##library(QCA3) ## reduce()
 library(glmnet)
-library(randomForest)
+## library(randomForest)
+library(KRLS)
 library(parallel)
 library(data.table) ## trying this out for speed
 
@@ -65,13 +66,17 @@ myfn<-function(y,X,DAT){
   ## QCA
   theqca<-eqmcc(thedf,outcome="Y")
 
-  ## Random Forest
+  ## ## Random Forest
 
-  forest<-randomForest(x=thedata, y = as.factor(theY),
-                     ntree = 1000, importance=TRUE,
-                     proximity=TRUE,
-                     norm.votes=TRUE, keep.forest=TRUE)
+  ## forest<-randomForest(x=thedata, y = as.factor(theY),
+  ##                    ntree = 1000, importance=TRUE,
+  ##                    proximity=TRUE,
+  ##                    norm.votes=TRUE, keep.forest=TRUE)
 
+  ## KRLS
+
+  thekrls<-krls(thedata,theY,derivative=TRUE)
+  
   ## Record whether the truth was found.
 truthparts<-gsub("\\s","",strsplit(thetruth,"|",fixed=TRUE)[[1]])
 
