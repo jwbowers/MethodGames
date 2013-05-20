@@ -33,11 +33,11 @@ makemodelmatrix<-function(thedata,interaction.order){
 
 ### Setup data. Some routines want matrices others want data.frames
 nsims<-200*numcores
-ntotalvars<-20
-N<-15
+ntotalvars<-15
+N<-12
 thedata<-makedatamatrix(ntotalvars,N)
 theX<-makemodelmatrix(thedata,3)
-thetruth<-"V1*V2*V3 | V4*V5"
+thetruth<-"V1*V2 | V4*V5"
 theY<-makeoutcome(thedata,thetruth)
 
 ## Some functions fail if we substitute data.table class objects for data.frame objects.
@@ -52,8 +52,8 @@ myfn<-function(y,X,DAT){
   theridge.cv<-cv.glmnet(theX,theY,alpha=0,type.measure="class",family="binomial",standardize=TRUE)
   bhat<-as.matrix(coef(theridge.cv,s="lambda.min"))[-1,1] ## coef() is a sparseMatrix
   if(all(bhat==0)){
-	  ## if bhat is all zero then assign not exactly zero
-	  bhat<-rep(.Machine$double.eps*2,length(bhat))
+    ## if bhat is all zero then assign not exactly zero
+    bhat<-rep(.Machine$double.eps*2,length(bhat))
   }
   adpen<-(1/pmax(abs(bhat),.Machine$double.eps))
 
@@ -74,27 +74,44 @@ myfn<-function(y,X,DAT){
   ##                    norm.votes=TRUE, keep.forest=TRUE)
 
   ## KRLS
-
   thekrls<-krls(thedata,theY,derivative=TRUE)
-  
+
+  ## thegbm<-gbm(theY~.,data=thedata,n.minobsinnode=2,interaction.depth=4 )
+  ## thesvm<-svm(theX,y=as.factor(theY),type='C',probability=TRUE)
   ## Record whether the truth was found.
-truthparts<-gsub("\\s","",strsplit(thetruth,"|",fixed=TRUE)[[1]])
+  truthparts<-gsub("\\s","",strsplit(thetruth,"|",fixed=TRUE)[[1]])
 
-## Did the adaptive lasso return non-zero coefs for the truth and only the truth?
-  lassofound<-all(row.names(thelasso.coef)[thelasso.coef[,1]!=0][-1] %in% gsub("*",":",truthparts,fixed=TRUE) )
+  ## Did the adaptive lasso return non-zero coefs for the truth and only the truth?
+  lassofound <- all( gsub("*",":",truthparts,fixed=TRUE) %in% row.names(thelasso.coef)[thelasso.coef[,1]!=0][-1] )
 
-## Did QCA return the truth and only the truth?
-qcafound<-all(theqca$PIs %in% truthparts)
+  ## Did QCA return the truth and only the truth?
+  qcafound<-all(theqca$PIs %in% truthparts)
 
-## Did randomForest return the truth and only the truth?
+  ## Did krls return the truth and only the truth?
+  ### No easy automatic way to do this yet.
+  derivmat<-thekrls$derivatives
+  colnames(derivmat)<-colnames(thekrls$X)
+
+  krlsfound.fn<-function(one,two,X=thekrls$X,dmat=derivmat){
+    thelm<-lm(X[,one]~dmat[,two])
+    thesum<-summary(thelm)
+    pf(thesum$fstatistic[1],thesum$fstatistic[2],thesum$fstatistic[3],
+       lower.tail=FALSE)<=.05
+  }
+
+  krlsfound<-all(krlsfound.fn("V1","V2"),
+                 krlsfound.fn("V4","V5"))
 
 
-  return(c(qcafound=qcafound,firthfound=firthfound,lassofound=lassofound))
+  return(c(qcafound=qcafound,
+           lassofound=lassofound,
+           krlsfound=krlsfound))
 }
 
+library(compiler)
 cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
 
 set.seed(12345) ## for replicability
-mysim<-simplify2array(mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores))
+mysim<-simplify2array(mclapply(1:nsims,function(i){ cmp.myfn(theY,theX,thedata) },mc.cores=numcores))
 apply(mysim,1,mean) ## proportion of the time that qca and brglm and lasso identified the right terms
-
+save(mysim,file="mysim.rda")
