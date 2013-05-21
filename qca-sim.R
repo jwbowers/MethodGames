@@ -31,25 +31,13 @@ makemodelmatrix<-function(thedata,interaction.order){
   model.matrix(as.formula(paste("~(-1+.)^",interaction.order,sep="")),data=thedata)
 }
 
-### Setup data. Some routines want matrices others want data.frames
-nsims<-200*numcores
-ntotalvars<-15
-N<-12
-thedata<-makedatamatrix(ntotalvars,N)
-theX<-makemodelmatrix(thedata,3)
-thetruth<-"V1*V2 | V4*V5"
-theY<-makeoutcome(thedata,thetruth)
 
-## Some functions fail if we substitute data.table class objects for data.frame objects.
-thedf<-data.frame(thedata)
-thedf$Y<-theY
-
-myfn<-function(y,X,DAT){
+fitfn<-function(y,X,DAT){
   message(".",appendLF=FALSE)
 
   ## Adaptive Lasso
   ### Choose lambda by minimizing misclassification
-  theridge.cv<-cv.glmnet(theX,theY,alpha=0,type.measure="class",family="binomial",standardize=TRUE)
+  theridge.cv<-cv.glmnet(X,y,alpha=0,type.measure="class",family="binomial",standardize=TRUE)
   bhat<-as.matrix(coef(theridge.cv,s="lambda.min"))[-1,1] ## coef() is a sparseMatrix
   if(all(bhat==0)){
     ## if bhat is all zero then assign not exactly zero
@@ -57,14 +45,14 @@ myfn<-function(y,X,DAT){
   }
   adpen<-(1/pmax(abs(bhat),.Machine$double.eps))
 
-  thelasso.cv<-cv.glmnet(theX,theY,alpha=1,type.measure="class",family="binomial",
+  thelasso.cv<-cv.glmnet(X,y,alpha=1,type.measure="class",family="binomial",
                          exclude=which(bhat==0),
                          penalty.factor=adpen,
                          standardize=TRUE)
   thelasso.coef<-coef(thelasso.cv,s="lambda.min")
 
   ## QCA
-  theqca<-eqmcc(thedf,outcome="Y")
+  theqca<-eqmcc(DAT,outcome="Y")
 
   ## ## Random Forest
 
@@ -74,7 +62,7 @@ myfn<-function(y,X,DAT){
   ##                    norm.votes=TRUE, keep.forest=TRUE)
 
   ## KRLS
-  thekrls<-krls(thedata,theY,derivative=TRUE)
+  thekrls<-krls(DAT,y,derivative=TRUE)
 
   ## thegbm<-gbm(theY~.,data=thedata,n.minobsinnode=2,interaction.depth=4 )
   ## thesvm<-svm(theX,y=as.factor(theY),type='C',probability=TRUE)
@@ -108,10 +96,29 @@ myfn<-function(y,X,DAT){
            krlsfound=krlsfound))
 }
 
+### Setup data. Some routines want matrices others want data.frames
+nsims<-100*numcores
+thetruth<-"V1*V2 | V4*V5"
+ntotalvars<-15
+N<-12
+
+myfn<-function(){
+  thedata<-makedatamatrix(ntotalvars,N)
+  theX<-makemodelmatrix(thedata,3) ## threeway interactions
+  theY<-makeoutcome(thedata,thetruth)
+
+  ## Some functions fail if we substitute data.table class objects for
+  ## data.frame objects.
+  thedf<-data.frame(thedata)
+  thedf$Y<-theY
+
+  fitfn(y=theY,X=theX,DAT=thedf)
+}
+
 library(compiler)
 cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
 
 set.seed(12345) ## for replicability
-mysim<-simplify2array(mclapply(1:nsims,function(i){ cmp.myfn(theY,theX,thedata) },mc.cores=numcores))
+mysim<-simplify2array(mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores))
 apply(mysim,1,mean) ## proportion of the time that qca and brglm and lasso identified the right terms
 save(mysim,file="mysim.rda")
