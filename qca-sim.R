@@ -7,7 +7,6 @@ library(glmnet)
 library(KRLS)
 library(parallel)
 library(data.table) ## trying this out for speed
-
 numcores<-detectCores()
 
 set.seed(20130516)
@@ -37,7 +36,7 @@ fitfn<-function(y,X,DAT){
 
   ## Adaptive Lasso
   ### Choose lambda by minimizing misclassification
-  theridge.cv<-cv.glmnet(X,y,alpha=0,type.measure="class",family="binomial",standardize=TRUE)
+  theridge.cv<-cv.glmnet(X,y,alpha=0,type.measure="class",family="binomial",standardize=TRUE, nfolds=min(round(nrow(X)/3),10),grouped=FALSE)
   bhat<-as.matrix(coef(theridge.cv,s="lambda.min"))[-1,1] ## coef() is a sparseMatrix
   if(all(bhat==0)){
     ## if bhat is all zero then assign not exactly zero
@@ -48,7 +47,9 @@ fitfn<-function(y,X,DAT){
   thelasso.cv<-cv.glmnet(X,y,alpha=1,type.measure="class",family="binomial",
                          exclude=which(bhat==0),
                          penalty.factor=adpen,
-                         standardize=TRUE)
+                         standardize=TRUE,
+                         nfolds=min(round(nrow(X)/3),10),
+                         grouped=FALSE)
   thelasso.coef<-coef(thelasso.cv,s="lambda.min")
 
   ## QCA
@@ -62,7 +63,7 @@ fitfn<-function(y,X,DAT){
   ##                    norm.votes=TRUE, keep.forest=TRUE)
 
   ## KRLS
-  thekrls<-krls(DAT,y,derivative=TRUE)
+  ## thekrls<-krls(DAT,y,derivative=TRUE)
 
   ## thegbm<-gbm(theY~.,data=thedata,n.minobsinnode=2,interaction.depth=4 )
   ## thesvm<-svm(theX,y=as.factor(theY),type='C',probability=TRUE)
@@ -77,48 +78,54 @@ fitfn<-function(y,X,DAT){
 
   ## Did krls return the truth and only the truth?
   ### No easy automatic way to do this yet.
-  derivmat<-thekrls$derivatives
-  colnames(derivmat)<-colnames(thekrls$X)
+ ##  derivmat<-thekrls$derivatives
+ ##  colnames(derivmat)<-colnames(thekrls$X)
 
-  krlsfound.fn<-function(one,two,X=thekrls$X,dmat=derivmat){
-    thelm<-lm(X[,one]~dmat[,two])
-    thesum<-summary(thelm)
-    pf(thesum$fstatistic[1],thesum$fstatistic[2],thesum$fstatistic[3],
-       lower.tail=FALSE)<=.05
-  }
+ ##  krlsfound.fn<-function(one,two,X=thekrls$X,dmat=derivmat){
+ ##    thelm<-lm(X[,one]~dmat[,two])
+ ##    thesum<-summary(thelm)
+ ##    pf(thesum$fstatistic[1],thesum$fstatistic[2],thesum$fstatistic[3],
+ ##       lower.tail=FALSE)<=.05
+ ##  }
 
-  krlsfound<-all(krlsfound.fn("V1","V2"),
-                 krlsfound.fn("V4","V5"))
-
+ ##  krlsfound<-all(krlsfound.fn("V1","V2"),
+ ##                 krlsfound.fn("V4","V5"))
+ thesis<-SIS(data=list(x=X,y=y),family=binomial(),detail=FALSE)
+ sisfound <- all( gsub("*",":",truthparts,fixed=TRUE) %in% colnames(X)[thesis$ISISind])
 
   return(c(qcafound=qcafound,
            lassofound=lassofound,
-           krlsfound=krlsfound))
+           sisfound=sisfound))
 }
 
 ### Setup data. Some routines want matrices others want data.frames
 nsims<-100*numcores
-thetruth<-"V1*V2 | V4*V5"
-ntotalvars<-15
-N<-12
+thetruth<-"V1*V2*V3 | V4*V5"
+ntotalvars<-20
+N<-20
 
-myfn<-function(){
-  thedata<-makedatamatrix(ntotalvars,N)
-  theX<-makemodelmatrix(thedata,3) ## threeway interactions
-  theY<-makeoutcome(thedata,thetruth)
-
-  ## Some functions fail if we substitute data.table class objects for
-  ## data.frame objects.
-  thedf<-data.frame(thedata)
-  thedf$Y<-theY
-
-  fitfn(y=theY,X=theX,DAT=thedf)
+myfn.maker<-function(ntotalvars,N,thetruth){
+  force(ntotalvars);force(N);force(thetruth)
+  function(){
+    thedata<-makedatamatrix(ntotalvars,N)
+    theX<-makemodelmatrix(thedata,3) ## threeway interactions
+    theY<-makeoutcome(thedata,thetruth)
+    ## Some functions fail if we substitute data.table class objects for
+    ## data.frame objects.
+    thedf<-data.frame(thedata)
+    thedf$Y<-theY
+    fitfn(y=theY,X=theX,DAT=thedf)
+  }
 }
+
+
+myfn<-myfn.maker(ntotalvars,N,thetruth)
 
 library(compiler)
 cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
 
 set.seed(12345) ## for replicability
-mysim<-simplify2array(mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores))
-apply(mysim,1,mean) ## proportion of the time that qca and brglm and lasso identified the right terms
+mysim<-mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores)
+mysim.arr<-simplify2array(mysim)
+apply(mysim.arr,1,mean) ## proportion of the time that qca and brglm and lasso identified the right terms
 save(mysim,file="mysim.rda")

@@ -59,6 +59,23 @@ different techniques for pattern finding.
 
 
 
+Once the game is over we interpret the results. In my game, the people using
+the adaptive lasso did the best. What does this mean? It does not mean that
+the adaptive lasso (as implemented by the fake teams in my fake game) is
+uniformly best. In fact, there is a large literature devoted to improving on
+(and criticizing) variants of the lasso --- this is why, for example, we used
+the adaptive lasso rather than the simple lasso. For example, the literature
+agree that in situations with highly intercorrelated term algorithmns such as
+the fused lasso (), the grouped lasso() might be better. Another set of
+literature suggests that an $L_0$ penalty might acheive the same results (or
+better) but faster (). If we do not want to look at terms themselves, and are
+mainly interested in classification and prediction we might even prefer still
+other approaches such as krls () or svm () or randomForests (). The point
+here, is not to teach readers about machine learning per se. But to suggest a
+way to evaluate methods and to highlight the fact that even the most
+conceptually appealing methods for pattern detection ought to have a chance to
+fail and thus stimulate further improvements in methodogology --- and, one
+hopes, in our understanding of the world. 
 
 
 
