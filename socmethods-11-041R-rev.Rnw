@@ -1,0 +1,58 @@
+\documentclass[10pt]{article}
+\usepackage[letterpaper,bottom=.75in,top=.5in,right=.5in,left=.5in,includemp=FALSE]{geometry}
+\usepackage[noae]{Sweave}
+
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=-2em,fontsize=\footnotesize}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=-2em,fontsize=\footnotesize}
+\DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=-2em,fontsize=\footnotesize}
+\renewenvironment{Schunk}{\vspace{\topsep}}{\vspace{\topsep}}
+\SweaveOpts{keep.source=TRUE, strip.white=all}
+
+
+\begin{document}
+
+This piece continues to improve. I liked this piece very much. I especially like
+the re-analysis of the Challenger disaster. I think that this piece will be
+important in helping the various social science disciplines figure out how to
+use (or not to use) QCA-based approaches. I hope that Sociological Methodology
+publishes this piece.
+
+One small point offered just to help the authors avoid unnecessary criticism: If
+I were presenting a simulation study I would do it many times: that is, rather
+than generate 40 cases and 4 X variables with randomly chosen 1 and 0 values,
+generate Y, and then run QCA vs firth's regressoin, I would repeat that whole
+process many times (like 1000).
+
+Here is my version of the author's study 1:
+
+<<>>=
+library(brglm)
+library(QCA)
+
+myfn<-function(){
+        X<-replicate(4,rbinom(40,1,.5)) ##  coin-flips
+        ## X<-replicate(4,sample(rep(c(1,0),20))) ##  fixed-permutation based approach
+        Y<-as.numeric(X[,1]*X[,2] | X[,3]*X[,4])
+        thedata<-data.frame(Y,X)
+        themod<-brglm(Y~(X1+X2+X3+X4)^2-1,data=thedata)
+
+        theqca<-eqmcc(thedata,outcome="Y")
+        ## Are both of the largest coefs for the two two-way interactions?
+        firthfound<-all(names(sort(coef(themod),decreasing=TRUE)[1:2]) %in% c('X1:X2','X3:X4'))
+        qcafound<-all(theqca$PIs %in% c('X1*X2','X3*X4'))
+
+        return(c(qcafound=qcafound,firthfound=firthfound))
+}
+
+set.seed(12345) ## for replicability
+mysim<-replicate(1000,myfn())
+apply(mysim,1,mean) ## proportion of the time that qca and brglm identified the right terms
+
+@
+
+The point is that a simple minded criticism might say, ``QCA failed and brglm
+succeeded on only one draw from the process that created X. And your draw was a
+bad draw.'' By doing it 1000 times you make such criticisms irrelevant.
+
+
+\end{document}
