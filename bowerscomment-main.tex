@@ -38,44 +38,86 @@ involve a known function of 5 of those variables (perhaps not a linear
 function of any one of them, and perhaps allowing all to interact in complex
 ways). Each player would receive a dataset with some number of rows (say, 10
 rows, each row representing one unit) and 100 columns (each column
-representing a variable). One version of the game would restrict participants to use one
-algorithm (like QCA). A second version would allow participants to choose
-their own algorithm (for example, some would use random forests
-\cite{breiman2001random} and others would use QCA and yet others would use an
-adaptive elastic net \citet{zou2009adaptive,zou2006adaptive}). In the first
-version of the competition, we would learn from the winners of the competition
-about how to successfully use a given method. In the second version of the
-game, we would learn about how different methods compare in their ability to
-address a given problem. 
+representing a variable). One version of the game would restrict participants
+to use one algorithm (like QCA). A second version would allow participants to
+choose their own algorithm (for example, some would use QCA and others would
+use an adaptive elastic net \citet{zou2009adaptive,zou2006adaptive} and still
+others might prefer one of the many competitors to the linear models with
+$L_1$ and $L_2$ penalties involved in the elastic net). In the first version
+of the competition, we would learn about craft: in different hands the same
+method may be more or less successful because every method requires many small
+ideosyncratic decisions, the winners and losers of this competition would both
+teach us about the craft required to use the method successfully.  In the
+second version of the game, we would learn about how different methods compare
+in their ability to address a given problem.
 
-If, however, time were short, one could approximate such game by following the
+If, however, time were short, one could approximate such a game by following the
 lead of the burgeoning field of machine learning and of
 \citet{lucasf2013}.\footnote{And excellent, and free to download, overview of
 	many of the techniques of machine learning is \citet{hastie2005elements}.}
 That is, we could generate our true relationship and compare the effectiveness
 of different machine learners both across different versions of the truth  and
-different techniques for pattern finding. 
-
-
+different techniques for pattern finding. For example, here I compare three
+techniques, QCA, and two approaches based on a linear model but involving very
+different penalties: (a) the adaptive elastic net ($L_1$ and $L_2$ penalties
+plus weights) and (b) Iterative Sure Independence Screening (ISIS)
+\cite{fan2008sure} (using Smoothly Clipped Absolute Deviation (SCAD) penalty
+\cite{fan2001variable}). The SCAD penalty and the adaptive $L_1$/$L_2$ penalty
+approaches are competitors in the field of machine learning with some arguing
+that SCAD better than the adaptive elastic-net if not its faster equivalent
+(cites). I ran two competitions. Data were generated with 40 binary
+observations and the outcome determined by a simple deterministic relationship
+with the explanatory variables: $y=X_1 \cdot X_2 \cdot X_3 \text{or} X_4 \cdot
+X_5$. Each player was handed a different set of binary X variables where
+roughly half of each variable were 1s and half 0s.\footnote{Interested readers
+	using the free, open-source, and multi-platform statistical analysis
+	language  of R\cite{rlang} can run the code directly from the web by typing
+	\texttt{source("http://jakebowers.org/MethodGames/bowersgames.R")}. The
+	code can be downloaded from the same site as well.} Because adding players
+to the game on a computer is cheap, I pretended that 800 players each did
+their best to find the truth with each of the three approaches here. In the
+first competition the players had a dataset with 5 columns (i.e. all of the
+variables were part of the truth, and the only task was to find the true
+interactions of the variables). In the second competition, the truth was the
+same, but 10 irrelevant variables were added to the dataset --- hiding the
+truth from the players. A player was considered to have found the truth if the
+truth and only the truth was selected. The results of the game were the following: In
+competition one (all variables in the truth), the QCA players found the truth
+2\% of the time, the adaptive elastic net players found the truth 87\% of the
+time, and the ISIS/SCAD players found the truth 93\% of the time. In
+competition two (five true variables related as above plus ten irrelevant
+variables) the QCA players never found the truth, the adaptive elastic net
+players found the truth 66\% of the time, and the ISIS/SCAD players found the
+truth 63\% of the time.
 
 
 Once the game is over we interpret the results. In my game, the people using
-the adaptive lasso did the best. What does this mean? It does not mean that
-the adaptive lasso (as implemented by the fake teams in my fake game) is
-uniformly best. In fact, there is a large literature devoted to improving on
-(and criticizing) variants of the lasso --- this is why, for example, we used
-the adaptive lasso rather than the simple lasso. For example, the literature
-agree that in situations with highly intercorrelated term algorithmns such as
-the fused lasso (), the grouped lasso() might be better. Another set of
-literature suggests that an $L_0$ penalty might acheive the same results (or
-better) but faster (). If we do not want to look at terms themselves, and are
-mainly interested in classification and prediction we might even prefer still
-other approaches such as krls () or svm () or randomForests (). The point
-here, is not to teach readers about machine learning per se. But to suggest a
-way to evaluate methods and to highlight the fact that even the most
-conceptually appealing methods for pattern detection ought to have a chance to
-fail and thus stimulate further improvements in methodogology --- and, one
-hopes, in our understanding of the world. 
+the adaptive elastic net did the best at the hard task but not the best at the
+easy task. What does this mean? It does not mean that the adaptive elastic net
+(as implemented by the fake teams in my fake game) is uniformly best. In fact,
+there is a large literature devoted to improving on (and criticizing) variants
+of the lasso --- this is why, for example, we used the adaptive lasso rather
+than the simple lasso. For example, the literature agrees that in situations
+with highly intercorrelated term algorithms such as the fused lasso () or the
+grouped lasso() might be better. And the jury is still out regarding SCAD (and
+other non-concave penalties versus concave penalties like the $L_1$ and $L_2$
+varieties used the lasso and elastic net. If we do not want to look at terms
+themselves, and are mainly interested in classification and prediction we
+might even prefer still other approaches such as krls () or svm () or
+randomForests (). The point here, is not to teach readers about machine
+learning per se nor to criticize QCA or the ISIS/SCAD approaches.  Rather I
+aim to suggest a way to evaluate methods: here, for example, I make the code
+of my simulated game public and have written in a free, open-source language
+that runs on all common computing platforms so that others might use it to
+evaluate their own candidate methods using their own data (or by making data
+that resembles their own).\footnote{Notice: Nothing in this simulated game
+	involves statistical inference nor large-N. I chose 40 cases and 5
+	variables to make the simulation run quickly.}
+
+and to highlight the
+fact that even the most conceptually appealing methods for pattern detection
+ought to have a chance to fail and thus stimulate further improvements in
+methodogology --- and, one hopes, in our understanding of the world.
 
 
 

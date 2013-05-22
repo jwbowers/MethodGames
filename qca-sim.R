@@ -1,18 +1,21 @@
+## If any of the following packages are not installed, install them.
 
-library(brglm)
+
+## Now load the packages
 library(QCA)
-##library(QCA3) ## reduce()
 library(glmnet)
-## library(randomForest)
-library(KRLS)
+library(SIS)
+library(compiler)
 library(parallel)
 library(data.table) ## trying this out for speed
 numcores<-detectCores()
 
-set.seed(20130516)
 makedatamatrix<-function(ntotalvars,N){
   ## Here we allow each column of X to have different numbers of 1s versus 0s.
-  data.table(replicate(ntotalvars,sample(c(1,0),size=N,replace=TRUE)))
+  ## data.table(replicate(ntotalvars,sample(c(1,0),size=N,replace=TRUE)))
+
+  ## Here we require half of each X to be 1 versus 0.
+  data.table(replicate(ntotalvars,sample(rep(c(1,0),N/2))))
 }
 
 makeoutcome<-function(X,expr){
@@ -34,98 +37,127 @@ makemodelmatrix<-function(thedata,interaction.order){
 fitfn<-function(y,X,DAT){
   message(".",appendLF=FALSE)
 
+  truthparts<-gsub("\\s","",strsplit(thetruth,"|",fixed=TRUE)[[1]])
+  yF<-factor(y)
+
   ## Adaptive Lasso
   ### Choose lambda by minimizing misclassification
-  theridge.cv<-cv.glmnet(X,y,alpha=0,type.measure="class",family="binomial",standardize=TRUE, nfolds=min(round(nrow(X)/3),10),grouped=FALSE)
-  bhat<-as.matrix(coef(theridge.cv,s="lambda.min"))[-1,1] ## coef() is a sparseMatrix
-  if(all(bhat==0)){
-    ## if bhat is all zero then assign not exactly zero
-    bhat<-rep(.Machine$double.eps*2,length(bhat))
+  theridge.cv <- try( cv.glmnet(X, yF, alpha=0, type.measure="class",
+                                family="binomial", standardize=TRUE,
+                                nfolds=min(round(nrow(X)/2), 10), grouped=FALSE))
+
+  if(inherits(theridge.cv,'try-error')){
+    lassofound<-NA
+  } else {
+    bhat<-as.matrix(coef(theridge.cv,s="lambda.min"))[-1,1] ## coef() is a sparseMatrix
+    if(all(bhat==0)){
+      ## if bhat is all zero then assign not exactly zero
+      bhat<-rep(.Machine$double.eps*2,length(bhat))
+    }
+    adpen<-(1/pmax(abs(bhat),.Machine$double.eps))
+
+    thelasso.cv<-try( cv.glmnet(X,yF,alpha=1,type.measure="class",
+                                family="binomial",
+                                exclude=which(bhat==0),
+                                penalty.factor=adpen,
+                                standardize=TRUE,
+                                nfolds=min(round(nrow(X)/2),10),
+                                grouped=FALSE) )
+
+    if(inherits(thelasso.cv,'try-error')){
+      lassofound<-NA
+    } else {
+      thelasso.coef<-coef(thelasso.cv,s="lambda.min")
+      ### Did the adaptive lasso return non-zero coefs for the truth and only the truth?
+      lassofound <- all( gsub("*",":",truthparts,fixed=TRUE) %in% row.names(thelasso.coef)[thelasso.coef[,1]!=0][-1] )
+    }
   }
-  adpen<-(1/pmax(abs(bhat),.Machine$double.eps))
 
-  thelasso.cv<-cv.glmnet(X,y,alpha=1,type.measure="class",family="binomial",
-                         exclude=which(bhat==0),
-                         penalty.factor=adpen,
-                         standardize=TRUE,
-                         nfolds=min(round(nrow(X)/3),10),
-                         grouped=FALSE)
-  thelasso.coef<-coef(thelasso.cv,s="lambda.min")
+    ## QCA
+    theqca<-try(eqmcc(DAT,outcome="Y"))
+    ### Did QCA return the truth and only the truth?
+    if(inherits(theqca,'try-error')){
+      qcafound<-NA
+    } else {
+      qcafound<-all(theqca$PIs %in% truthparts)
+    }
 
-  ## QCA
-  theqca<-eqmcc(DAT,outcome="Y")
+    ## SIS/ISIS
+    thesis<-try( SIS(data=list(x=X,y=y),
+                family=binomial(),
+                folds=min(round(nrow(X)/2),10),
+                maxloop=10,
+                detail=FALSE) )
+    if(inherits(thesis,'try-error')){
+      sisfound<-NA 
+    } else {
+    sisfound <- all( gsub("*",":",truthparts,fixed=TRUE) %in% colnames(X)[thesis$ISISind])
+    }
 
-  ## ## Random Forest
+    return(c(qcafound=qcafound,
+             lassofound=lassofound,
+             sisfound=sisfound))
+  } 
 
-  ## forest<-randomForest(x=thedata, y = as.factor(theY),
-  ##                    ntree = 1000, importance=TRUE,
-  ##                    proximity=TRUE,
-  ##                    norm.votes=TRUE, keep.forest=TRUE)
 
-  ## KRLS
-  ## thekrls<-krls(DAT,y,derivative=TRUE)
-
-  ## thegbm<-gbm(theY~.,data=thedata,n.minobsinnode=2,interaction.depth=4 )
-  ## thesvm<-svm(theX,y=as.factor(theY),type='C',probability=TRUE)
-  ## Record whether the truth was found.
-  truthparts<-gsub("\\s","",strsplit(thetruth,"|",fixed=TRUE)[[1]])
-
-  ## Did the adaptive lasso return non-zero coefs for the truth and only the truth?
-  lassofound <- all( gsub("*",":",truthparts,fixed=TRUE) %in% row.names(thelasso.coef)[thelasso.coef[,1]!=0][-1] )
-
-  ## Did QCA return the truth and only the truth?
-  qcafound<-all(theqca$PIs %in% truthparts)
-
-  ## Did krls return the truth and only the truth?
-  ### No easy automatic way to do this yet.
- ##  derivmat<-thekrls$derivatives
- ##  colnames(derivmat)<-colnames(thekrls$X)
-
- ##  krlsfound.fn<-function(one,two,X=thekrls$X,dmat=derivmat){
- ##    thelm<-lm(X[,one]~dmat[,two])
- ##    thesum<-summary(thelm)
- ##    pf(thesum$fstatistic[1],thesum$fstatistic[2],thesum$fstatistic[3],
- ##       lower.tail=FALSE)<=.05
- ##  }
-
- ##  krlsfound<-all(krlsfound.fn("V1","V2"),
- ##                 krlsfound.fn("V4","V5"))
- thesis<-SIS(data=list(x=X,y=y),family=binomial(),detail=FALSE)
- sisfound <- all( gsub("*",":",truthparts,fixed=TRUE) %in% colnames(X)[thesis$ISISind])
-
-  return(c(qcafound=qcafound,
-           lassofound=lassofound,
-           sisfound=sisfound))
-}
-
-### Setup data. Some routines want matrices others want data.frames
-nsims<-100*numcores
-thetruth<-"V1*V2*V3 | V4*V5"
-ntotalvars<-20
-N<-20
-
-myfn.maker<-function(ntotalvars,N,thetruth){
-  force(ntotalvars);force(N);force(thetruth)
-  function(){
-    thedata<-makedatamatrix(ntotalvars,N)
-    theX<-makemodelmatrix(thedata,3) ## threeway interactions
-    theY<-makeoutcome(thedata,thetruth)
-    ## Some functions fail if we substitute data.table class objects for
-    ## data.frame objects.
-    thedf<-data.frame(thedata)
-    thedf$Y<-theY
-    fitfn(y=theY,X=theX,DAT=thedf)
+  myfn.maker<-function(ntotalvars,N,thetruth){
+    force(ntotalvars);force(N);force(thetruth)
+    function(){
+      thedata<-makedatamatrix(ntotalvars,N)
+      theX<-makemodelmatrix(thedata,4) ## fourway interactions
+      ## theX<-unique(theX,MARGIN=2) ## delete identical columns
+      theY<-makeoutcome(thedata,thetruth)
+      ##while(sum(theY)==1 | any(colSums(theX) %in% c(0,N))){
+      ##  ## don't allow constant Xs
+      ##  thedata<-makedatamatrix(ntotalvars,N)
+      ##  theX<-makemodelmatrix(thedata,4) ## fourway interactions
+      ##  ## theX<-unique(theX,MARGIN=2) ## delete identical columns
+      ##  theY<-makeoutcome(thedata,thetruth)
+      ##}
+      names(theY)<-row.names(theX)
+      ## Some functions fail if we substitute data.table class objects for
+      ## data.frame objects.
+      thedf<-data.frame(thedata)
+      thedf$Y<-theY
+      fitfn(y=theY,X=theX,DAT=thedf)
+    }
   }
-}
 
 
-myfn<-myfn.maker(ntotalvars,N,thetruth)
 
-library(compiler)
-cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
+  ## Start doing simulations
+  ### Setup data. Some routines want matrices others want data.frames
+  nsims<-100*numcores
 
-set.seed(12345) ## for replicability
-mysim<-mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores)
-mysim.arr<-simplify2array(mysim)
-apply(mysim.arr,1,mean) ## proportion of the time that qca and brglm and lasso identified the right terms
-save(mysim,file="mysim.rda")
+  ## Easy sim: All variables in truth, p<n
+  thetruth<-"V1*V2*V3 | V4*V5"
+  ntotalvars<-5
+  N<-30
+
+  myfn<-myfn.maker(ntotalvars,N,thetruth)
+  cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
+
+  set.seed(12345) ## for replicability
+  ## mysim1<-replicate(nsims,cmp.myfn())
+  mysim1<-mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores)
+  mysim1.arr<-simplify2array(mysim1)
+  apply(mysim1.arr,1,mean,na.rm=TRUE) ## proportion of the time that qca and isis/scad and lasso identified the right terms
+  apply(mysim1.arr,1,function(x){mean(is.na(x)) }) ## what proportion NAs in each method?
+
+  save(mysim1,file="mysim1.rda")
+
+  ## Very hard sim: most variables not in truth, p>n
+  ntotalvars<-15
+
+  myfn<-myfn.maker(ntotalvars,N,thetruth)
+  cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
+
+  set.seed(12345) ## for replicability
+  ## mysim2<-replicate(nsims,cmp.myfn())
+  mysim2<-mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores)
+  mysim2.arr<-simplify2array(mysim2)
+  apply(mysim2.arr,1,mean,na.rm=TRUE) ## proportion of the time that qca and isis/scad and lasso identified the right terms
+  apply(mysim2.arr,1,function(x){mean(is.na(x)) }) ## what proportion NAs in each method?
+
+  save(mysim2,file="mysim2.rda")
+
