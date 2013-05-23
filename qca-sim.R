@@ -43,13 +43,14 @@ fitfn<-function(y,X,DAT){
   message(".",appendLF=FALSE)
 
   truthparts<-gsub("\\s","",strsplit(thetruth,"|",fixed=TRUE)[[1]])
-  yF<-factor(y)
+  truthpartstmp<-gsub("*",":",truthparts,fixed=TRUE) ## for models using ':' rather than '*'
 
   ## Adaptive Lasso
   ### Choose lambda by minimizing misclassification
+  yF<-factor(y)
   theridge.cv <- try( cv.glmnet(X, yF, alpha=0, type.measure="class",
-				family="binomial", standardize=TRUE,
-				nfolds=min(round(nrow(X)/2), 10), grouped=FALSE))
+                                family="binomial", standardize=TRUE,
+                                nfolds=min(round(nrow(X)/2), 10), grouped=FALSE))
 
   if(inherits(theridge.cv,'try-error')){
     lassofound<-NA
@@ -62,78 +63,103 @@ fitfn<-function(y,X,DAT){
     adpen<-(1/pmax(abs(bhat),.Machine$double.eps))
 
     thelasso.cv<-try( cv.glmnet(X,yF,alpha=1,type.measure="class",
-				family="binomial",
-				exclude=which(bhat==0),
-				penalty.factor=adpen,
-				standardize=TRUE,
-				nfolds=min(round(nrow(X)/2),10),
-				grouped=FALSE) )
+                                family="binomial",
+                                exclude=which(bhat==0),
+                                penalty.factor=adpen,
+                                standardize=TRUE,
+                                nfolds=min(round(nrow(X)/2),10),
+                                grouped=FALSE) )
 
     if(inherits(thelasso.cv,'try-error')){
       lassofound<-NA
     } else {
       thelasso.coef<-coef(thelasso.cv,s="lambda.min")
+      nonzerolasso.coef<-row.names(thelasso.coef)[thelasso.coef[,1]!=0][-1]
       ### Did the adaptive lasso return non-zero coefs for the truth and only the truth?
-      lassofound <- all( gsub("*",":",truthparts,fixed=TRUE) %in% row.names(thelasso.coef)[thelasso.coef[,1]!=0][-1] )
+      lassofound <- setequal( truthpartstmp,nonzerolasso.coef)
     }
   }
 
   ## QCA
-  theqca<-try(eqmcc(DAT,outcome="Y"))
+  theqcapos<-try(eqmcc(DAT,outcome="Y"))
+  theqcaneg<-try(eqmcc(DAT,outcome="Y",explain="0"))
   ### Did QCA return the truth and only the truth?
-  if(inherits(theqca,'try-error')){
+  if(inherits(theqcapos,'try-error')|inherits(theqcaneg,'try-error')){
     qcafound<-NA
   } else {
-    qcafound<-all(theqca$PIs %in% truthparts)
+    ##all.equal(theqcapos$solution,theqcapos$PIs)
+    pospis<- gsub("[a-z][0-9]?.\\*?","",theqcapos$PIs)
+    pospis<- gsub("\\*$","",pospis)
+    negpis<- gsub("[a-z][0-9]?.\\*?","",theqcaneg$PIs)
+    negpis<- gsub("\\*$","",negpis)
+    qcafound<-all(setequal(pospis, truthparts) | setequal(negpis,truthparts))
   }
 
-  ## SIS/ISIS
-  thesis<-try( SIS(data=list(x=X,y=y),
-		   family=binomial(),
-		   folds=min(round(nrow(X)/2),10),
-		   maxloop=10) )
+  ## scadcv<-try( SIS:::CVscadglm(X,y,family=binomial()) )
+  ## thescad<-try( fullscadglm(X,y,
+  ##                           family=binomial(),
+  ##                           initsoln=scadcv$w,
+  ##                           lambda=scadcv$best.lambda,
+  ##                           maxloop=100) )
+  ##
+  options(warn=-1) ## annoying warnings from glm.fit()
+  thesis<-try(
+              SIS(data=list(x=X,y=y),
+                  family=binomial(),
+                  maxloop=100,
+                  inittype='L1',
+                  vartype=0
+                  ),
+              silent=TRUE
+              )
+  options(warn=0)
+
+  ##  if(inherits(thesis,'try-error')| inherits(scadcv,'try-error')){
   if(inherits(thesis,'try-error')){
-    sisfound<-NA 
+    sisfound<-NA
   } else {
-    sisfound <- all( gsub("*",":",truthparts,fixed=TRUE) %in% colnames(X)[thesis$ISISind])
+    thesis.coef<-colnames(X)[thesis$ISISind] ##[which(thesis!=0)]
+    ### Did the adaptive lasso return non-zero coefs for the truth and only the truth?
+    sisfound<- setequal( truthpartstmp, thesis.coef)
   }
 
+  ## Playing with library(lqa) but very slow
+  ##junk<-cv.lqa(y,X,family=binomial(),penalty.family=scad,lambda.candidates=list(lambda=seq(1,10,1),a=3.7),n.fold=2,loss.func="dev.loss")
 
   ## KRLS
   ##   thekrls<-krls(thedata,theY,derivative=TRUE)
   ##   derivmat<-thekrls$derivatives
   ##   colnames(derivmat)<-colnames(thekrls$X)
-  ## 
+  ##
   ##   krlsfound.fn<-function(one,two,X=thekrls$X,dmat=derivmat){
   ##     thelm<-lm(X[,one]~dmat[,two])
   ##     thesum<-summary(thelm)
   ##     pf(thesum$fstatistic[1],thesum$fstatistic[2],thesum$fstatistic[3],
   ##        lower.tail=FALSE)<=.05
   ##   }
-  ## 
+  ##
   ##   krlsfound<-all(krlsfound.fn("V1","V2"),
   ## 		 krlsfound.fn("V4","V5"))
 
 
 
   return(c(qcafound=qcafound,
-	   lassofound=lassofound,
-	   sisfound=sisfound))
-} 
+           lassofound=lassofound,
+           sisfound=sisfound))
+}
 
 
 myfn.maker<-function(ntotalvars,N,thetruth){
   force(ntotalvars);force(N);force(thetruth)
   function(){
     thedata<-makedatamatrix(ntotalvars,N)
-    theX<-makemodelmatrix(thedata,4) ## fourway interactions
+    theX<-makemodelmatrix(thedata,3) ## all threeway interactions
     ## theX<-unique(theX,MARGIN=2) ## delete identical columns
     theY<-makeoutcome(thedata,thetruth)
-    while(sum(theY)==1 | any(colSums(theX) %in% c(0,N))){
-    ##  ## don't allow Y with only 1 positive obs 
+    while(sum(theY) %in% c(0,1,N)){ ## | any(colSums(theX) %in% c(0,N))){
+      ##  ## don't allow Y with only 1 positive obs, or constant Y
       thedata<-makedatamatrix(ntotalvars,N)
-      theX<-makemodelmatrix(thedata,4) ## fourway interactions
-    ##  ## theX<-unique(theX,MARGIN=2) ## delete identical columns
+      theX<-makemodelmatrix(thedata,3)
       theY<-makeoutcome(thedata,thetruth)
     }
     names(theY)<-row.names(theX)
@@ -159,26 +185,38 @@ N<-40
 myfn<-myfn.maker(ntotalvars,N,thetruth)
 cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
 
-set.seed(12345) ## for replicability
+if(numcores>1){
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(20130501)
+  mc.reset.stream()
+} else {
+  set.seed(20130501)
+}
 ## mysim1<-replicate(nsims,cmp.myfn())
-mysim1<-mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores)
+mysim1<-mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores,mc.set.seed=TRUE)
 mysim1.arr<-simplify2array(mysim1)
-apply(mysim1.arr,1,mean,na.rm=TRUE) ## proportion of the time that qca and isis/scad and lasso identified the right terms
+apply(mysim1.arr,1,mean,na.rm=TRUE) ## proportion of the time that qca and scad and lasso identified the right terms
 apply(mysim1.arr,1,function(x){mean(is.na(x)) }) ## what proportion NAs in each method?
 
 save(mysim1,file="mysim1.rda")
 
 ## Very hard sim: most variables not in truth, p>n
-ntotalvars<-15
+ntotalvars<-20
 
 myfn<-myfn.maker(ntotalvars,N,thetruth)
 cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
 
-set.seed(12345) ## for replicability
+if(numcores>1){
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(20130501)
+  mc.reset.stream()
+} else {
+  set.seed(20130501)
+}
 ## mysim2<-replicate(nsims,cmp.myfn())
-mysim2<-mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores)
+mysim2<-mclapply(1:nsims,function(i){ cmp.myfn() },mc.cores=numcores,mc.set.seed=TRUE)
 mysim2.arr<-simplify2array(mysim2)
-apply(mysim2.arr,1,mean,na.rm=TRUE) ## proportion of the time that qca and isis/scad and lasso identified the right terms
+apply(mysim2.arr,1,mean,na.rm=TRUE) ## proportion of the time that qca and scad and lasso identified the right terms
 apply(mysim2.arr,1,function(x){mean(is.na(x)) }) ## what proportion NAs in each method?
 
 save(mysim2,file="mysim2.rda")
