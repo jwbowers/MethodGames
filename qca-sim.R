@@ -201,7 +201,7 @@ apply(mysim1.arr,1,function(x){mean(is.na(x)) }) ## what proportion NAs in each 
 save(mysim1,file="mysim1.rda")
 
 ## Very hard sim: most variables not in truth, p>n
-ntotalvars<-20
+ntotalvars<-15
 
 myfn<-myfn.maker(ntotalvars,N,thetruth)
 cmp.myfn<-cmpfun(myfn,options=list(optimize=3))
