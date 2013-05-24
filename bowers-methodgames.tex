@@ -1,125 +1,119 @@
 \documentclass[12pt]{article}
 \usepackage{parskip}
 \usepackage{natbib}
-\bibliographystyle{apsr}
+\usepackage{amsmath}
+\usepackage{url}
 
-\title{Assessing Methods for Pattern Discovery}
+\title{Method Games: Assessing Methods for Discovery}
 \author{Jake Bowers}
 \date{\today}
 
 \begin{document}
 \maketitle
 
-Automated pattern discovery is changing the world. Algorithms predict our
-preferences for movies and other products. And the same general methods allow
-cars to drive themselves, and for our financial markets to be dominated by
-trades between automated agents rather than humans. Why should we not focus
-the attention of machine learners on social science problems? The
-methodologists developing QCA are animated by the same general sense that
-algorithms can improve on human pattern recognition. And they are surely
-correct in their intuition. Yet, \citet{lucasfk2013} show that the specific
-algorithms of QCA (and variants) fail to discover patterns that exist and may
-misleadingly identify phantom patterns. Of course, most algorithms are useful
-for some purpose. When should variants of QCA succeed? And when should a
-researcher choose another of the many possible tools for prediction and
-discovery? More generally, in a world in which new techniques for machine
-learning arise daily, how should social scientists decide which to use? On
-what basis should we judge a method for pattern discovery? Here is a simple
-proposal.
+A fun way to assess a promising method for pattern discovery would involve a
+game.  One scholar would invent a true pattern that generates an outcome and
+perhaps hide this pattern amid irrelevant information.  Players would compete
+to discover the known but hidden truth.  Imagine, for example, that the task
+would be identify which interactive function of 100 binary variables predicts
+a binary outcome for 10 cases. Each player would receive a possibly unique
+feature dataset of 100 columns and 10 rows and an outcome vector generated
+according to the true function with 1 column and 10 rows. One version of the
+game would restrict participants to use one algorithm. A second version would
+allow participants to choose their own algorithm (for example, some might use
+a QCA variant \cite{rihoux2008configurational}, others would use an adaptive
+lasso \citet{zou2006adaptive} and still others might prefer one of the many
+competitors to the lasso such as the smoothly clipped absolute deviation
+(SCAD) penalty \cite{fan2001variable}, random forests
+\cite{breiman2001random}, or others.)\footnote{And excellent, and free to
+	download, overview of many of the techniques of machine learning is
+	\citet{hastie2005elements}.} In the first version of the competition, we
+would learn about craft: in different hands the same method may be more or
+less successful because every method requires many small idiosyncratic
+decisions, the winners and losers of this competition would both teach us
+about the judgement required to use the method successfully.  In the second
+version of the game, we would learn about how different methods compare in
+their ability to address a given problem (although we might also confuse
+learning about method with the results produced by a researcher with excellent
+judgment and luck).
 
-Any useful method for pattern discovery should find true patterns much more
-frequently than it finds false patterns. How would we assess the pattern
-finding abilities of a method? The best option, from my point of view, would
-involve a competition among scholars: One scholar would invent a true pattern
-and others would be challenged to discover the known but hidden truth.
-Imagine, for example, that the task would be identify which function of
-possibly 100 $X$ variables predicts a binary outcome, but the truth would
-involve a known function of 5 of those variables (perhaps not a linear
-function of any one of them, and perhaps allowing all to interact in complex
-ways). Each player would receive a dataset with some number of rows (say, 10
-rows, each row representing one unit) and 100 columns (each column
-representing a variable). One version of the game would restrict participants
-to use one algorithm (like QCA). A second version would allow participants to
-choose their own algorithm (for example, some would use QCA and others would
-use an adaptive elastic net \citet{zou2009adaptive,zou2006adaptive} and still
-others might prefer one of the many competitors to the linear models with
-$L_1$ and $L_2$ penalties involved in the elastic net). In the first version
-of the competition, we would learn about craft: in different hands the same
-method may be more or less successful because every method requires many small
-ideosyncratic decisions, the winners and losers of this competition would both
-teach us about the craft required to use the method successfully.  In the
-second version of the game, we would learn about how different methods compare
-in their ability to address a given problem.
+If, however, time were short or players difficult to recruit, one could
+approximate such a game by following the lead of \citet{lucasfk2013}. That is,
+a single scholar could generate a true relationship and write a computer
+program to compare the effectiveness of different algorithms both across
+versions of the relationship and across types of approaches to pattern
+discovery. To make concrete this cheap and easy version of the multi-player
+method game, consider this example: Say, substantive debate centers around 40
+cases. And say that prior literature suggests that two interactive patterns of
+binary variables drive outcomes (say, $y=X_1 \cdot X_2 \cdot X_3 \text{or} X_4
+\cdot X_5$ where all $X_1 \ldots  \in \{0,1\}$ and thus $y \in \{0,1\}$).
+Further, imagine that three methods suggest themselves as useful: (1) QCA, (2)
+the adaptive lasso and (3) iterative sure independence screening with a SCAD
+plugin (ISIS/SCAD) \cite{fan2008sure}.  \cite{fan2001variable} proved that
+SCAD penalty would correctly set false parameters to 0 as $n \rightarrow
+\infty$ given a reasonable choice of tuning parameters in contrast to the
+simple lasso \cite{tibshirani1996regression}.  Later, \citet{zou2006adaptive}
+showed that a weighted version of the lasso (known as the adaptive lasso) also
+has an oracle property conditional on a well-chosen tuning parameter. QCA
+appears promising in this case in that it does not require tuning parameters.
 
-If, however, time were short, one could approximate such a game by following the
-lead of the burgeoning field of machine learning and of
-\citet{lucasf2013}.\footnote{And excellent, and free to download, overview of
-	many of the techniques of machine learning is \citet{hastie2005elements}.}
-That is, we could generate our true relationship and compare the effectiveness
-of different machine learners both across different versions of the truth  and
-different techniques for pattern finding. For example, here I compare three
-techniques, QCA, and two approaches based on a linear model but involving very
-different penalties: (a) the adaptive elastic net ($L_1$ and $L_2$ penalties
-plus weights) and (b) Iterative Sure Independence Screening (ISIS)
-\cite{fan2008sure} (using Smoothly Clipped Absolute Deviation (SCAD) penalty
-\cite{fan2001variable}). The SCAD penalty and the adaptive $L_1$/$L_2$ penalty
-approaches are competitors in the field of machine learning with some arguing
-that SCAD better than the adaptive elastic-net if not its faster equivalent
-(cites). I ran two competitions. Data were generated with 40 binary
-observations and the outcome determined by a simple deterministic relationship
-with the explanatory variables: $y=X_1 \cdot X_2 \cdot X_3 \text{or} X_4 \cdot
-X_5$. Each player was handed a different set of binary X variables where
-roughly half of each variable were 1s and half 0s.\footnote{Interested readers
-	using the free, open-source, and multi-platform statistical analysis
-	language  of R\cite{rlang} can run the code directly from the web by typing
-	\texttt{source("http://jakebowers.org/MethodGames/bowersgames.R")}. The
-	code can be downloaded from the same site as well.} Because adding players
-to the game on a computer is cheap, I pretended that 800 players each did
-their best to find the truth with each of the three approaches here. In the
-first competition the players had a dataset with 5 columns (i.e. all of the
-variables were part of the truth, and the only task was to find the true
-interactions of the variables). In the second competition, the truth was the
-same, but 10 irrelevant variables were added to the dataset --- hiding the
-truth from the players. A player was considered to have found the truth if the
-truth and only the truth was selected. The results of the game were the following: In
-competition one (all variables in the truth), the QCA players found the truth
-2\% of the time, the adaptive elastic net players found the truth 87\% of the
-time, and the ISIS/SCAD players found the truth 93\% of the time. In
-competition two (five true variables related as above plus ten irrelevant
-variables) the QCA players never found the truth, the adaptive elastic net
-players found the truth 66\% of the time, and the ISIS/SCAD players found the
-truth 63\% of the time.
+To approximate the method game the script generated a different dataset for
+each machine player.\footnote{Interested readers can download the code from
+	\url{https://github.com/jwbowers/MethodGames}.} The idea of using
+different datasets all produced by the same true relationship is that we can
+learn more about a method if we observe both the users and the inputs in many
+different but comparable circumstances.  Because adding players to the game on
+a computer is cheap, this competition involved 800 players each using all
+three approaches to find the truth. Two competitions occur in this script: In
+the ``easy game'' the dataset contains only 5 columns: all of the variables
+were part of the truth, and players focused on finding the true interactions
+of the existing variables. The ``hard game'' differs from the easy game only
+in that the data set contains 10 irrelevant variables in addition the original
+5 added to the dataset: the truth is now hidden.  The script counts player as
+successful it returned the truth and only the truth.  In this particular
+example, the results privileged ISIS/SCAD over QCA and the adaptive lasso: In
+the easy game the QCA found the truth 18\% of the time, the adaptive lasso
+found the truth 82\% of the time, and ISIS/SCAD found the truth 96\% of the
+time. In the hard game QCA never found the truth, adaptive lasso found the
+truth 33\% of the time, and ISIS/SCAD found the truth 61\% of the
+time.\footnote{The adaptive lasso and ISIS/SCAD players were given a dataset
+	with all four-way interactions of the input variables. So, they had 40
+	cases and 30 terms in the easy game and 40 cases and 1940 terms in the
+	hard game. Note that probability plays no inherent role in this computer
+	competition. Chance variations across scholars here is approximated by the
+	fact that each otherwise identical computer player receives a slightly
+	different dataset created with the same algorithm and same true
+	relationship generating the outcome.}
 
-
-Once the game is over we interpret the results. In my game, the people using
-the adaptive elastic net did the best at the hard task but not the best at the
-easy task. What does this mean? It does not mean that the adaptive elastic net
-(as implemented by the fake teams in my fake game) is uniformly best. In fact,
-there is a large literature devoted to improving on (and criticizing) variants
-of the lasso --- this is why, for example, we used the adaptive lasso rather
-than the simple lasso. For example, the literature agrees that in situations
-with highly intercorrelated term algorithms such as the fused lasso () or the
-grouped lasso() might be better. And the jury is still out regarding SCAD (and
-other non-concave penalties versus concave penalties like the $L_1$ and $L_2$
-varieties used the lasso and elastic net. If we do not want to look at terms
-themselves, and are mainly interested in classification and prediction we
-might even prefer still other approaches such as krls () or svm () or
-randomForests (). The point here, is not to teach readers about machine
-learning per se nor to criticize QCA or the ISIS/SCAD approaches.  Rather I
-aim to suggest a way to evaluate methods: here, for example, I make the code
-of my simulated game public and have written in a free, open-source language
-that runs on all common computing platforms so that others might use it to
-evaluate their own candidate methods using their own data (or by making data
-that resembles their own).\footnote{Notice: Nothing in this simulated game
-	involves statistical inference nor large-N. I chose 40 cases and 5
-	variables to make the simulation run quickly.}
-
-and to highlight the
-fact that even the most conceptually appealing methods for pattern detection
-ought to have a chance to fail and thus stimulate further improvements in
-methodogology --- and, one hopes, in our understanding of the world.
+We should not interpret these results to suggest that we should discard the
+adaptive lasso for all analysis tasks in favor of ISIS/SCAD.  A large and
+growing literature both criticizes and builds on the adaptive lasso. For
+example, if the predictor variables are highly intercorrelated we might prefer
+adaptive versions of the fused lasso \cite{rinaldo2009properties}, the grouped
+lasso \cite{wang2008note}, or the elastic net \cite{ghosh2007adaptive}. Nor is
+it obvious that QCA is uniformly in appropriate. Although if my real data did
+look like the 40 case, two interactions of five binary variables example, I
+would probably not trust the results from QCA, and, if I had many variables
+(not just the five variables known to contribute to the truth), I might prefer
+ISIS/SCAD (although I might still hunt for another technique in the hopes of
+finding a method that wins 95\% of the time rather than 60\%). And, it is
+possible that a real competition with skilled human players with excellent
+judgment might have made either the adaptive lasso or QCA dominate ISIS/SCAD:
+After all, those who play with the script will see that the tuning parameters
+for the adaptive lasso were chosen fairly naively, only one of two possible
+open-source implementations of QCA were used, and many other small but
+potentially consequential decisions were made throughout. These then, are the
+points: no method is good for everything; to communicate fruitfully about
+methods we must envision possibilities to learn by comparing methods in the
+context of specific research designs, theoretical goals, and observations; 
+one such vision is the method game (which would enable us to learn not only
+about a method in an abstract sense, but about the craft of using said
+method in comparison with other methods); and, finally, we can simulate the
+method game to provide either motivation for a real game or as a second best
+option when time is tight. 
 
 
 
+\bibliographystyle{apsr}
+\bibliography{/Users/jwbowers/Documents/PROJECTS/BIB/big}
 \end{document}
-\bibliography{/Users/jwbowers/Documents/PROJECTS/BIB/big.bib}
