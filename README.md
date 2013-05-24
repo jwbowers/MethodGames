@@ -1,7 +1,9 @@
 MethodGames
 ===========
 
-A short discussion of how one might evaluate a new method for discovering patterns.
+A short discussion of how one might evaluate a new method for discovering patterns. 
+
+This is the text and code for Bowers, Jake. forthcoming. ``Method Games,'' *Sociological Methodology*. 
 
 The results of the simulation are in ```socmeth.Rout```.
 
