@@ -153,21 +153,22 @@ myfn.maker<-function(ntotalvars,N,thetruth){
   force(ntotalvars);force(N);force(thetruth)
   function(){
     thedata<-makedatamatrix(ntotalvars,N)
-    theX<-makemodelmatrix(thedata,3) ## all threeway interactions
+    theX<-makemodelmatrix(thedata,4) ## all threeway interactions
     ## theX<-unique(theX,MARGIN=2) ## delete identical columns
     theY<-makeoutcome(thedata,thetruth)
     while(sum(theY) %in% c(0,1,N)){ ## | any(colSums(theX) %in% c(0,N))){
       ##  ## don't allow Y with only 1 positive obs, or constant Y
       thedata<-makedatamatrix(ntotalvars,N)
-      theX<-makemodelmatrix(thedata,3)
+      theX<-makemodelmatrix(thedata,4)
       theY<-makeoutcome(thedata,thetruth)
     }
     names(theY)<-row.names(theX)
     ## Some functions fail if we substitute data.table class objects for
     ## data.frame objects.
-    thedf<-data.frame(thedata)
-    thedf$Y<-theY
-    fitfn(y=theY,X=theX,DAT=thedf)
+    #thedf<-data.frame(thedata)
+    #thedf$Y<-theY
+    thedata$Y<-theY
+    fitfn(y=theY,X=theX,DAT=thedata)
   }
 }
 
