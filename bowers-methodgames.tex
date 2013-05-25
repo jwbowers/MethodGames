@@ -12,54 +12,56 @@
 \maketitle
 
 A fun way to assess a promising method for pattern discovery would involve a
-game.  One scholar would invent a true pattern that generates an outcome and
-perhaps hide this pattern amid irrelevant information.  Players would compete
-to discover the known but hidden truth.  Imagine, for example, that the task
-would be identify which interactive function of 100 binary variables predicts
-a binary outcome for 10 cases. Each player would receive a possibly unique
-feature dataset of 100 columns and 10 rows and an outcome vector generated
-according to the true function with 1 column and 10 rows. One version of the
-game would restrict participants to use one algorithm. A second version would
-allow participants to choose their own algorithm (for example, some might use
-a QCA variant \citep{rihoux2008configurational}, others would use an adaptive
-lasso \citep{zou2006adaptive} and still others might prefer one of the many
+game.  One scholar would invent a true pattern of features, generate an
+outcome and perhaps hide this pattern amid irrelevant information.  For
+example, the game designer might provide 15 binary features of 40 cases to the
+players. Players would compete to discover the hidden truth: perhaps the
+truth, in this game, would involve multiple combinations of features or
+perhaps the game would be a trick and no combination of features should stand
+out over any other.  One version of the method game would restrict
+participants to use one algorithm. A second version would allow participants
+to choose their own algorithm: For example, some might use a QCA variant
+\citep{rihoux2008configurational}, others would use an adaptive lasso
+\citep{zou2006adaptive} and still others might prefer one of the many
 competitors to the lasso such as the smoothly clipped absolute deviation
-(SCAD) penalty \citep{fan2001variable}, random forests
-\citep{breiman2001random}, or others.)\footnote{An excellent, and free to
-	download, overview of many of the techniques of machine learning is
-	\citet{hastie2005elements}.} In the first version of the competition, we
-would learn about craft: in different hands the same method may be more or
-less successful because every method requires many small idiosyncratic
-decisions, the winners and losers of this competition would both teach us
-about the judgement required to use the method successfully.  In the second
-version of the game, we would learn about how different methods compare in
-their ability to address a given problem (although we might also confuse
-learning about method with the results produced by a researcher with excellent
-judgment and luck).
+(SCAD) penalty \citep{fan2001variable} or random forests
+\citep{breiman2001random} or kernel-regularized least
+squares\citep{}.)\footnote{ \citet{hasttibfried09} provides an
+  excellent, and free to download, overview of many of the techniques known as
+  ``machine learning'' or ``data mining''.} In the first version of the
+competition, we would learn about craft: in different hands the same method
+may be more or less successful. The results of this competition would teach us
+about the judgment required to use the method successfully.  In the version of
+the game where players choose different approaches, we would learn how different methods
+compare in their ability to address a given problem (although we might also
+confuse learning about method with a discovery that some researchers have
+excellent judgment and luck).
 
 If, however, time were short or players difficult to recruit, one could
 approximate such a game by following the lead of \citet{lucasfk2013}. That is,
-a single scholar could generate a true relationship and write a computer
-program to compare the effectiveness of different algorithms both across
-versions of the relationship and across types of approaches to pattern
-discovery. To make concrete this cheap and easy version of the multi-player
-method game, consider this example: Say, substantive debate centers around 40
-cases. And say that prior literature suggests that two interactive patterns of
-binary variables drive outcomes (say, $y=X_1 \cdot X_2 \cdot X_3 \text{or} X_4
-\cdot X_5$ where all $X_1 \ldots  \in \{0,1\}$ and thus $y \in \{0,1\}$).
-Further, imagine that three methods suggest themselves as useful: (1) QCA, (2)
-the adaptive lasso and (3) iterative sure independence screening with a SCAD
-plugin (ISIS/SCAD) \cite{fan2008sure}.  \cite{fan2001variable} proved that
-SCAD penalty would correctly set false parameters to 0 as $n \rightarrow
-\infty$ given a reasonable choice of tuning parameters in contrast to the
-simple lasso \cite{tibshirani1996regression}.  Later, \citet{zou2006adaptive}
-showed that a weighted version of the lasso (known as the adaptive lasso) also
-has an oracle property conditional on a well-chosen tuning parameter. QCA
-appears promising in this case in that it does not require tuning parameters.
+a single scholar could generate a true relationship as if she were kicking off
+a real method game but then she could write a computer program to compare the
+effectiveness of different algorithms both across versions of the true
+relationship and across types of approaches to pattern discovery. To make
+concrete this cheap and easy version of the multi-player method game, this
+essay is paired with a script.\footnote{Interested readers can download the
+  code from \url{https://github.com/jwbowers/MethodGames}.}
+Imagine that substantive debate centers around 40 cases. And say that prior
+literature suggests that two interactive patterns of binary variables drive
+outcomes (say, $Y=X_1 \cdot X_2 \cdot X_3 \text{or} X_4 \cdot X_5$ where all
+$X_1 \ldots  \in \{0,1\}$ and thus $Y \in \{0,1\}$).  Further, imagine that
+three methods suggest themselves as useful: (1) QCA, (2) the adaptive lasso
+and (3) iterative sure independence screening with a SCAD plugin (ISIS/SCAD)
+\cite{fan2008sure}.  \cite{fan2001variable} proved that SCAD penalty would
+correctly set false parameters to 0 as $n \rightarrow \infty$ given a
+reasonable choice of tuning parameters in contrast to the simple lasso
+\cite{tibshirani1996regression}.  Later, \citet{zou2006adaptive} showed that a
+weighted version of the lasso (known as the adaptive lasso) also has an oracle
+property conditional on a well-chosen tuning parameter. QCA appears promising
+in this case in that it does not require tuning parameters.
 
 To approximate the method game the script generated a different dataset for
-each machine player.\footnote{Interested readers can download the code from
-	\url{https://github.com/jwbowers/MethodGames}.} The idea of using
+each machine player. The idea of using
 different datasets all produced by the same true relationship is that we can
 learn more about a method if we observe both the users and the inputs in many
 different but comparable circumstances.  Because adding players to the game on
@@ -77,12 +79,12 @@ found the truth 82\% of the time, and ISIS/SCAD found the truth 96\% of the
 time. In the hard game QCA never found the truth, adaptive lasso found the
 truth 33\% of the time, and ISIS/SCAD found the truth 61\% of the
 time.\footnote{The adaptive lasso and ISIS/SCAD players were given a dataset
-	with all four-way interactions of the input variables. So, they had 40
-	cases and 30 terms in the easy game and 40 cases and 1940 terms in the
-	hard game. Note that probability plays no inherent role in this computer
-	competition. Chance variations across scholars here is approximated by the
-	fact that each otherwise identical computer player receives a slightly
-	different dataset created with the same algorithm and same true
+	with all four-way interactionsions of the input variables. So, they had 40
+	cases and 30 terms in they easy game and 40 cases and 1940 terms in the
+	hard game. Note that producedbability plays no inherent role in this computer
+	competition. Chance variablesariations across scholars here is approximated by the
+	fact that each oftherwise identical computer player receives a slightly
+	different datasetet created with the same algorithm and same true
 	relationship generating the outcome.}
 
 We should not interpret these results to suggest that we should discard the
@@ -117,3 +119,4 @@ option when time is tight.
 \bibliographystyle{apsr}
 \bibliography{/Users/jwbowers/Documents/PROJECTS/BIB/big}
 \end{document}
+
