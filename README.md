@@ -6,10 +6,10 @@ A short discussion of how one might evaluate a new method for discovering patter
 This is the text and code for Bowers, Jake. forthcoming. ``Method Games,''
 *Sociological Methodology*. 
 
-The results of the simulation are in ```socmeth.Rout```.
+The results of the machine method game are in ```socmeth.Rout```.
 
 If you are using OS X or some other version of unix, you can rerun the
-simulation in ```socmeth.R``` to recreate ```socmeth.Rout``` by typing the
+game in ```socmeth.R``` to recreate ```socmeth.Rout``` by typing the
 following at the command line:
 
 ```bash
@@ -24,9 +24,9 @@ example, that 5/800=.00625 of the versions of the easy data problem (5
 variables, all involved in the truth) were intractable by the ```SIS()```
 function.
 
-If you are using Windows, you will need to edit the code to not use the
+If you are using Windows, you will need to edit the code to avoid the
 ```parallel``` library and to substitute ```lapply()``` or ```replicate()```
 because, as far as I know, the shared memory multicore parallel capabilities
-of R have not yet been ported to Windows. You can also setup your own cluster
+of R have not yet been ported to Windows. You can also setup your own local or remote cluster
 using distributed memory parallelism using the ```snow``` package and
 ```parLapply()```.
