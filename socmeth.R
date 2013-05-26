@@ -1,4 +1,4 @@
-## File: socmeth.R 
+## File: socmeth.R
 ## Description: An R script to compare QCA, the Adaptive Lasso, and ISIS/SCAD
 ## Author: Jake Bowers
 ## This file lives at https://github.com/jwbowers/MethodGames
@@ -25,7 +25,7 @@ library(parallel)
 numcores<-detectCores()
 
 # Now define functions:
-## This section might easily live in another file but is here for simplicity. 
+## This section might easily live in another file but is here for simplicity.
 
 makedatamatrix<-function(nfeatures,N){
   ## nfeatures: scalar integer, number of observed features of a case
@@ -56,19 +56,19 @@ makemodelmatrix<-function(thedata,interactionorder){
 }
 
 
-fitfn<-function(y,X,DAT, thetruth=thetruth){
+fitfn<-function(y,X,DAT,thetruth){
   ## y: is the outcome
   ## X: is a matrix object arising from makemodelmatrix
   ## DAT: is a data.frame object (some functions don't like data.tables or matrices)
-  ## thetruth: a character evaluting to a logical expression of the column names of X 
+  ## thetruth: a character evaluting to a logical expression of the column names of X
 
   ### Note: All fitters are wrapped in try() environments because sometimes,
   ### especially if N is small, the fitters throw errors for some
-  ### configurations of X and y. In those cases, the function returns a NA. 
+  ### configurations of X and y. In those cases, the function returns a NA.
 
   message(".",appendLF=FALSE) ## print a dot to indicate speed of script
 
-  ## Represent thetruth in ways that can be compared to the output of the learners 
+  ## Represent thetruth in ways that can be compared to the output of the learners
   truthparts<-gsub("\\s","",strsplit(thetruth,"|",fixed=TRUE)[[1]])
   truthpartstmp<-gsub("*",":",truthparts,fixed=TRUE) ## for models using ':' rather than '*'
 
@@ -80,7 +80,7 @@ fitfn<-function(y,X,DAT, thetruth=thetruth){
                                 nfolds=min(round(nrow(X)/2), 10), grouped=FALSE))
 
   if(inherits(theridge.cv,'try-error')){
-    lassofound<-NA 
+    lassofound<-NA
   } else {
     bhat<-as.matrix(coef(theridge.cv,s="lambda.min"))[-1,1] ## coef() is a sparseMatrix
     if(all(bhat==0)){
@@ -141,7 +141,7 @@ fitfn<-function(y,X,DAT, thetruth=thetruth){
   if(inherits(thesis,'try-error')){
     sisfound<-NA
   } else {
-    thesis.coef<-colnames(X)[thesis$ISISind] 
+    thesis.coef<-colnames(X)[thesis$ISISind]
     sisfound<- setequal( truthpartstmp, thesis.coef)
   }
 
@@ -150,7 +150,7 @@ fitfn<-function(y,X,DAT, thetruth=thetruth){
   ##   derivmat<-thekrls$derivatives
   ##   colnames(derivmat)<-colnames(thekrls$X)
   ##
-  ## KRLS does not report interactions although they are implied. Thanks to 
+  ## KRLS does not report interactions although they are implied. Thanks to
   ## Chad Hazlett for suggesting something like the following to assess relationships among marginals
   ##   krlsfound.fn<-function(one,two,X=thekrls$X,dmat=derivmat){
   ##     thelm<-lm(X[,one]~dmat[,two])
@@ -187,7 +187,7 @@ gamefn.maker<-function(nfeatures,N,thetruth,interactionorder){
     }
     names(theY)<-row.names(theX)
     thedata$Y<-theY
-    fitfn(y=theY,X=theX,DAT=thedata)
+    fitfn(y=theY,X=theX,DAT=thedata,thetruth=thetruth)
   }
 }
 
