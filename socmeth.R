@@ -169,7 +169,7 @@ fitfn<-function(y,X,DAT, thetruth=thetruth){
 
 
 ## This function makes a function that repeats the dataset and truth finding
-myfn.maker<-function(nfeatures,N,thetruth,interactionorder){
+gamefn.maker<-function(nfeatures,N,thetruth,interactionorder){
   ## nfeatures: scalar integer, number of observed features of a case
   ## N: scalar, integer, number of cases
   ## thetruth: is a character evaluating to a logical thetruthession of the column names of X
@@ -200,7 +200,7 @@ thetruth<-"V1*V2*V3 | V4*V5"
 nfeatures<-5
 N<-40
 
-easygamefn<-easygamefn.maker(nfeatures,N,thetruth,4)
+easygamefn<-gamefn.maker(nfeatures,N,thetruth,4)
 cmp.easygamefn<-cmpfun(easygamefn,options=list(optimize=3)) ## see if byte-compiling speeds up the runs
 
 ## Set seeds for random number generator. Since I am using a parallelize setup,
@@ -225,7 +225,7 @@ save(easygameresults,file="easygameresults.rda")
 ## Hard game: most variables not in truth, p>n
 nfeatures<-15
 
-hardgamefn<-hardgamefn.maker(nfeatures,N,thetruth,4)
+hardgamefn<-gamefn.maker(nfeatures,N,thetruth,4)
 cmp.hardgamefn<-cmpfun(hardgamefn,options=list(optimize=3))
 
 if(numcores>1){
