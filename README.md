@@ -3,10 +3,13 @@ MethodGames
 
 A short discussion of how one might evaluate a new method for discovering patterns. 
 
-This is the text and code for Bowers, Jake. forthcoming. ``Method Games,''
+This is the text and code for Bowers, Jake. forthcoming. "Method Games,"
 *Sociological Methodology*. 
 
 The results of the machine method game are in ```socmeth.Rout```.
+
+To rerun this game, or to modify it for your own use, you will need to install
+the [R statistical computing environment](http://www.r-project.org).
 
 If you are using OS X or some other version of unix, you can rerun the
 game in ```socmeth.R``` to recreate ```socmeth.Rout``` by typing the
