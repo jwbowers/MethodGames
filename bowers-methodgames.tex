@@ -19,7 +19,7 @@ scholar would invent a true pattern of features, generate an outcome and
 perhaps hide this pattern amid irrelevant information.  For example, the game
 designer might provide 15 binary features of 40 cases to the players. Players
 would compete to discover the hidden truth.  One version of the method game
-would require that participants use particular algorithm. A second version
+would require that participants use a particular algorithm. A second version
 would allow participants to choose their own algorithm. For example, some
 might choose a QCA variant \citep{rihoux2008configurational}, others would
 implement an adaptive lasso \citep{zou2006adaptive} and still others might
@@ -29,8 +29,13 @@ absolute deviation (SCAD) penalty \citep{fan2001variable}, random forests
 ~\citep{hainmueller2012kernel}.)\footnote{\citet{hasttibfried09} provide an
   excellent overview of many of the techniques known as
   ``machine learning'' or ``data mining''. The adaptive lasso and SCAD
-  techniques used in this article do feature selection by minimizing a
-  particular objective function. In the case of the adaptive lasso, the
+  techniques used in this article belong to a family of machine learning
+  algorithms known as penalized linear models. By setting coefficients to
+  zero rather than merely privileging fit to data, they delete irrelevant features (of combinations thereof) from a given
+  model.  They select relevant features
+  (or combinations thereof) by minimizing a least squares objective function
+  penalized by some other function of the coefficients. The adaptive lasso
+  function  the
   function is $p_{\lambda}(\beta_0, \ldots, \beta_P)=\sum_{i=1}^N (y_i - ( \beta_0 + \beta_1 z_1 + \ldots + \beta_P
   z_p) )^2 + \lambda \sum_{p=1}^P w_p|\beta_p|$ where $w_p$ is a weight the
   coefficient of feature $z_p$ (which could consist of some complex
