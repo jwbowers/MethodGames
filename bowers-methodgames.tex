@@ -27,7 +27,7 @@ prefer one of the many competitors to the lasso, such as the smoothly clipped
 absolute deviation (SCAD) penalty \citep{fan2001variable}, random forests
 ~\citep{breiman2001random}, or kernel-regularized least squares
 ~\citep{hainmueller2012kernel}.)\footnote{\citet{hasttibfried09} provide an
-  excellent, and free to download, overview of many of the techniques known as
+  excellent overview of many of the techniques known as
   ``machine learning'' or ``data mining''. The adaptive lasso and SCAD
   techniques used in this article do feature selection by minimizing a
   particular objective function. In the case of the adaptive lasso, the
@@ -43,11 +43,19 @@ absolute deviation (SCAD) penalty \citep{fan2001variable}, random forests
   model). The SCAD model also uses the least-squares term, but replaces the
   lasso penalty with a function designed to have no penalty when $\beta_p=0$
   (like the lasso) but then rises smoothly to penalize very large $\beta_p$ less than the
-  lasso penalty. \citet{fan2001variable} define the penalty by its derivative
-  such that if the penalty function for a given $\beta$ is $p_\lambda(\beta)$ then
-  $p'_{\lambda}(\beta)=\lambda \left\{ I(\beta \le \lambda) + \frac{ (a
-      \lambda - \beta)_{+} }{ (a-1) \lambda} I(\beta > \lambda) \right\}$.    
-}
+  lasso penalty: $p_{\lambda}(\beta_p)=\begin{cases}
+    \lambda |\beta_p|, & \text{if } |\beta_p|\le \lambda; \\
+    - \left( \frac{|\beta_p|^2 - 2 a \lambda |\beta_p| + \lambda^2}{2 (a-1)} \right), & \text{if } \lambda < |\beta_p| \le a \lambda; \\
+    \frac{(a+1)\lambda^2}{2},  & \text{if } |\beta_p| > a \lambda 
+  \end{cases}$, where $a > 2$ and $\lambda > 0$.
+ }
+ 
+%%   \citet{fan2001variable} define the penalty by its derivative
+%%   such that if the penalty function for a given $\beta$ is $p_\lambda(\beta)$ then
+%%   $p'_{\lambda}(\beta)=\lambda \left\{ I(\beta \le \lambda) + \frac{ (a
+%%       \lambda - \beta)_{+} }{ (a-1) \lambda} I(\beta > \lambda) \right\}$.    
+%% }
+%% 
 
 In the first version of the
 competition, we would learn about craft: in different hands the same method
@@ -141,3 +149,5 @@ consequential game.
 \bibliography{/Users/jwbowers/Documents/PROJECTS/BIB/big}
 \end{document}
 
+
+[^2]: 
