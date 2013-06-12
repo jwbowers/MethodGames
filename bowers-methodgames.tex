@@ -31,16 +31,23 @@ absolute deviation (SCAD) penalty \citep{fan2001variable}, random forests
   ``machine learning'' or ``data mining''. The adaptive lasso and SCAD
   techniques used in this article do feature selection by minimizing a
   particular objective function. In the case of the adaptive lasso, the
-  function is $\sum_{i=1}^N (y_i - ( \beta_0 + \beta_1 z_1 + \ldots + \beta_P
+  function is $p_{\lambda}(\beta_0, \ldots, \beta_P)=\sum_{i=1}^N (y_i - ( \beta_0 + \beta_1 z_1 + \ldots + \beta_P
   z_p) )^2 + \lambda \sum_{p=1}^P w_p|\beta_p|$ where $w_p$ is a weight the
   coefficient of feature $z_p$ (which could consist of some complex
   combination of features), $\lambda$ determines the importance of the sum of
-  the absolute values of the coefficients in the total score, and the first
-  term is simply the sum of squared prediction errors. \citet{zou2006adaptive}
+  the absolute values of the coefficients in the total score. The first
+  term is simply the sum of squared prediction errors and the second term
+  involves the $L_1$ or lasso penalty of $\lambda|\beta_p|$. \citet{zou2006adaptive}
   advised that $w_p$ be generated from a first stage model fitting $y_i$ with
   features $z_1 \ldots z_p$ (like a ridge regression or a least squares
-  model). The SCAD penalty is smoother than $|\beta_p|$ and is a piecewise
-  function     }
+  model). The SCAD model also uses the least-squares term, but replaces the
+  lasso penalty with a function designed to have no penalty when $\beta_p=0$
+  (like the lasso) but then rises smoothly to penalize very large $\beta_p$ less than the
+  lasso penalty. \citet{fan2001variable} define the penalty by its derivative
+  such that if the penalty function for a given $\beta$ is $p_\lambda(\beta)$ then
+  $p'_{\lambda}(\beta)=\lambda \left\{ I(\beta \le \lambda) + \frac{ (a
+      \lambda - \beta)_{+} }{ (a-1) \lambda} I(\beta > \lambda) \right\}$.    
+}
 
 In the first version of the
 competition, we would learn about craft: in different hands the same method
@@ -65,15 +72,17 @@ independence screening with a SCAD plugin (ISIS/SCAD) \citep{fan2008sure}.
 \citet{fan2001variable} proved that the SCAD penalty would correctly set false
 parameters to 0 as $n \rightarrow \infty$ given a reasonable choice of tuning
 parameters in contrast to the simple lasso proposed by
-\cite{tibshirani1996regression}.  Later, \citet{zou2006adaptive} showed that a
-weighted version of the lasso (known as the adaptive lasso) also has an oracle
-property conditional on a well-chosen tuning parameter. Although QCA does not
-promise to find the truth, it appears well suited to discovering complex
-comparisons and it does not require tuning parameters.  This essay makes
-concrete such a machine version of the method game using a script representing
-a situation where substantive debate centers on a binary outcome and 40
-cases.\footnote{Interested readers can download the code from
-  \url{https://github.com/jwbowers/MethodGames}.}
+\cite{tibshirani1996regression}.  And \citet{fan2008sure} show that, when the
+number of features is much larger than the number of cases, a preliminary
+dimension reduction step improves the performance of the SCAD penalty.  Later,
+\citet{zou2006adaptive} showed that a weighted version of the lasso (known as
+the adaptive lasso) also has an oracle property conditional on a well-chosen
+tuning parameter. Although QCA does not promise to find the truth, it appears
+well suited to discovering complex comparisons and it does not require tuning
+parameters.  This essay makes concrete such a machine version of the method
+game using a script representing a situation where substantive debate centers
+on a binary outcome and 40 cases.\footnote{Interested readers can download the
+  code from \url{https://github.com/jwbowers/MethodGames}.}
 
 
 Machine players are naive. Assessing the performance of a machine will not
