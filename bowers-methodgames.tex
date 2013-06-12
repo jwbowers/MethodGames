@@ -31,7 +31,7 @@ absolute deviation (SCAD) penalty \citep{fan2001variable}, random forests
   ``machine learning'' or ``data mining''. The adaptive lasso and SCAD
   techniques used in this article do feature selection by minimizing a
   particular objective function. In the case of the adaptive lasso, the
-  function is $\sum_{i=1}^N (y_i - ( \beta_0 + \beta_1 z_1 + \ldots + \beta_p
+  function is $\sum_{i=1}^N (y_i - ( \beta_0 + \beta_1 z_1 + \ldots + \beta_P
   z_p) )^2 + \lambda \sum_{p=1}^P w_p|\beta_p|$ where $w_p$ is a weight the
   coefficient of feature $z_p$ (which could consist of some complex
   combination of features), $\lambda$ determines the importance of the sum of
@@ -39,7 +39,8 @@ absolute deviation (SCAD) penalty \citep{fan2001variable}, random forests
   term is simply the sum of squared prediction errors. \citet{zou2006adaptive}
   advised that $w_p$ be generated from a first stage model fitting $y_i$ with
   features $z_1 \ldots z_p$ (like a ridge regression or a least squares
-  model).    }
+  model). The SCAD penalty is smoother than $|\beta_p|$ and is a piecewise
+  function     }
 
 In the first version of the
 competition, we would learn about craft: in different hands the same method
