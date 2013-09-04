@@ -31,5 +31,4 @@ If you are using Windows, you will need to edit the code to avoid the
 ```parallel``` library and to substitute ```lapply()``` or ```replicate()```
 because, as far as I know, the shared memory multicore parallel capabilities
 of R have not yet been ported to Windows. You can also setup your own local or remote cluster
-using distributed memory parallelism using the ```snow``` package and
-```parLapply()```.
+using distributed memory parallelism using the ```snow``` package and the ```parLapply()``` function.
