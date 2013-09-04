@@ -102,24 +102,30 @@ results from a script that implements a machine version of the method game to
 compare QCA, the adaptive lasso, and ISIS/SCAD.\footnote{Interested readers
   can download the code from \url{https://github.com/jwbowers/MethodGames}.}
 
-Machine players are naive. Assessing the performance of a machine will not
+Notice that this game is relatively easy. The case-knowledge available is only
+that the causal features involve the $X$'s and the outcomes are recorded in
+the $Y$. Simplifying the case-knowledge requirements here is useful and allows
+an assessment of method rather than game player: all of the machine players
+have the same case knowledge and will use it in the same manner. Further,
+machine players are naive. Assessing the performance of a machine will not
 tell us about the craft by which human scholars exploit a method.  Further,
 any single collection of case attributes can idiosyncratically advantage one
 method over another. For fairness, and to approximate the kind of natural
 variation one would see if different human players were involved in the game,
 the script generated a different set of features for each machine player
-although the outcomes arose from the same deterministic true
-function as described above.  This competition involved 800 players each using
-all three approaches to seek the truth.  The script runs two contests. The
-easier of the two games presents players with a five column dataset: each
-column represents a part of the truth, and players focus on finding the true
-combinations of the existing features.  The hard game differs from the easy
-game only in that the data set contains 10 irrelevant case features in
-addition the original 5.  The script counts a player as successful if it found
-the truth and only the truth. In the easy game, QCA, the adaptive lasso, and
-ISIS/SCAD found the truth for 18\%, 82\%, and 96\% of the players
-respectively. In the hard game, QCA, the adaptive lasso, and ISIS/SCAD found
-the truth for 0\%, 33\%, and 61\% of the players respectively.
+although the outcomes arose from the same deterministic true function as
+described above (i.e. the case-knowledge is held constant across players and
+scenarios).  This competition involved 800 players each using all three
+approaches to seek the truth.  The script runs two contests. The easier of the
+two games presents players with a five column dataset: each column represents
+a part of the truth, and players focus on finding the true combinations of the
+existing features.  The hard game differs from the easy game only in that the
+data set contains 10 irrelevant case features in addition to the original 5.  The
+script counts a player as successful if it found the truth and only the truth.
+In the easy game, QCA, the adaptive lasso, and ISIS/SCAD found the truth for
+18\%, 82\%, and 96\% of the players respectively. In the hard game, QCA, the
+adaptive lasso, and ISIS/SCAD found the truth for 0\%, 33\%, and 61\% of the
+players respectively.
 
 These results do not suggest that we should discard QCA and the adaptive lasso
 in favor of ISIS/SCAD.  A large and growing literature both criticizes and
