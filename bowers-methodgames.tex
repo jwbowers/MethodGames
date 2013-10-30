@@ -4,15 +4,30 @@
 \usepackage{amsmath}
 \usepackage{url}
 \usepackage[pdftex,colorlinks=true,citecolor=black,raiselinks=false]{hyperref}
+%%\usepackage[T1]{fontenc}
+%% Soc Meth Formatting
 \usepackage{tgtermes}
-\usepackage[T1]{fontenc}
+\usepackage[margin=1.25in]{geometry}
+\usepackage{setspace}
+\usepackage{footmisc} % for footnote spacing
 
-\title{Method Games:\\ Assessing Methods for Discovery}
-\author{Jake Bowers}
+\title{Method Games:\\ A Proposal for Assessing and Learning About Methods}
+
+\author{Jake Bowers\thanks{Associate Professor, Departments of Political
+    Science and Statistics \& NCSA, University of Illinois @ Urbana-Champaign
+    (\texttt{jwbowers@illinois.edu}).  \textit{Acknowledgements:}  David
+    Collier, Joanne Rodrigues, and Tim Liao helped improve this essay.}
+} 
+
 \date{\today}
 
 \begin{document}
+\begin{titlepage}
 \maketitle
+\end{titlepage}
+
+% I think this is true double spacing
+\setstretch{1.67}
 
 Imagine assessing a promising method for pattern discovery using a game.  One
 scholar would invent a true pattern of features, generate an outcome and
@@ -26,36 +41,36 @@ implement an adaptive lasso \citep{zou2006adaptive} and still others might
 prefer one of the many competitors to the lasso, such as the smoothly clipped
 absolute deviation (SCAD) penalty \citep{fan2001variable}, random forests
 ~\citep{breiman2001random}, or kernel-regularized least squares
-~\citep{hainmueller2012kernel}.)\footnote{\citet{hasttibfried09} provide an
-  excellent overview of many of the techniques known as ``machine learning''
-  or ``data mining''. The adaptive lasso and SCAD techniques used in this
-  article belong to a family of machine learning algorithms known as penalized
-  linear models. By setting coefficients to zero rather than privileging fit
-  to data,  these procedures fit linear models to outcomes and aim to return
-  coefficients of zero for irrelevant features, thereby revealing relevant
-  features. These algorithms choose coefficients $\beta_1, \ldots, \beta_P$
-  for $P$ features (and arbitrary combinations thereof), $X_{i1}, \ldots,
-  X_{iP}$, related to some outcome, $y_i$, to minimize a function of the sum
-  of squared prediction error (i.e. least squares) plus a penalty function
-  that rewards solutions with some collection of $\beta_p$ set to 0. The
-  objective function tends to look like $\sum_{i=1}^N (y_i - ( \beta_0 +
-  \beta_1 X_{i1} + \ldots + \beta_P X_{iP}) )^2 + \sum_{p=1}^P
-  p(\lambda,\beta_p)$.  The tuning parameter, $\lambda$, determines the
-  relative importance of the penalty function in the objective function
-  compared to the least squares function.  The adaptive lasso penalty is
-  $p(\lambda,\beta_p,w_p)=\lambda  w_p|\beta_p|$ where $w_p=1/\hat{\beta}_p$
-  and $\hat{\beta}_p$ arises from a previous linear model (here a ridge
-  regression but often an OLS regression). The SCAD replaces the lasso penalty
-  with a function designed to have no penalty when $\beta_p=0$ (like the
-  adaptive lasso) but then to rise smoothly to penalize very large $\beta_p$
-  at a decreasing rate:  $p(\lambda,\beta_p,a)=\begin{cases} \lambda
-    |\beta_p|, & \text{if } |\beta_p|\le \lambda; \\ - \left(
-      \frac{|\beta_p|^2 - 2 a \lambda |\beta_p| + \lambda^2}{2 (a-1)} \right),
-    & \text{if } \lambda < |\beta_p| \le a \lambda; \\
-    \frac{(a+1)\lambda^2}{2},  & \text{if } |\beta_p| > a \lambda
-  \end{cases}$, where $a > 2$ and $\lambda > 0$.  Some see adaptive lasso as
-  an approximation or competitor to the SCAD penalty \cite[page
-  92]{hasttibfried09}. }
+~\citep{hainmueller2012kernel}.)\footnote{\citet{hasttibfried09,james2013introduction} provide an
+  excellent overview of many of the techniques known as ``machine learning.''
+  The proposal for method assessment in this essay uses two simple techniques
+  (adaptive lasso and SCAD) for illustration which are similar to common tools
+  used by social scientists, but is not limited to supervised linear model-based
+  algorithms. The particular procedures evaluated here work by fitting
+  penalized linear models to outcomes aiming to return coefficients of zero
+  for irrelevant features, thereby revealing relevant features. These
+  algorithms choose coefficients $\beta_1, \ldots, \beta_P$ for $P$ features
+  (and arbitrary combinations thereof), $X_{i1}, \ldots, X_{iP}$, related to
+  some outcome, $y_i$, to minimize a function of the sum of squared prediction
+  error (i.e. least squares) plus a penalty function that rewards solutions
+  with some collection of $\beta_p$ set to 0. The objective function tends to
+  look like $\sum_{i=1}^N (y_i - ( \beta_0 + \beta_1 X_{i1} + \ldots + \beta_P
+  X_{iP}) )^2 + \sum_{p=1}^P p(\lambda,\beta_p)$.  The tuning parameter,
+  $\lambda$, determines the relative importance of the penalty function in the
+  objective function compared to the least squares function.  The adaptive
+  lasso penalty is $p(\lambda,\beta_p,w_p)=\lambda  w_p|\beta_p|$ where
+  $w_p=1/\hat{\beta}_p$ and $\hat{\beta}_p$ arises from a previous linear
+  model (here a ridge regression but often an OLS regression). The SCAD
+  replaces the lasso penalty with a function designed to have no penalty when
+  $\beta_p=0$ (like the adaptive lasso) but then to rise smoothly to penalize
+  very large $\beta_p$ at a decreasing rate:
+  $p(\lambda,\beta_p,a)=\begin{cases} \lambda |\beta_p|, & \text{if }
+    |\beta_p|\le \lambda; \\ - \left( \frac{|\beta_p|^2 - 2 a \lambda
+	|\beta_p| + \lambda^2}{2 (a-1)} \right), & \text{if } \lambda <
+    |\beta_p| \le a \lambda; \\ \frac{(a+1)\lambda^2}{2},  & \text{if }
+    |\beta_p| > a \lambda \end{cases}$, where $a > 2$ and $\lambda > 0$.  Some
+  see adaptive lasso as an approximation or competitor to the SCAD penalty
+  \cite[page 92]{hasttibfried09}. }
  
 %%   \citet{fan2001variable} define the penalty by its derivative
 %%   such that if the penalty function for a given $\beta$ is $p_\lambda(\beta)$ then
@@ -66,41 +81,44 @@ absolute deviation (SCAD) penalty \citep{fan2001variable}, random forests
 
 In the first version of the competition, we would learn about craft: in
 different hands the same method may perform differently. The results of this
-competition would teach us about the judgment required to use the method
+competition would teach us about the many kinds of substantive and
+methodological judgments required to use the method
 successfully.  In the version of the game where players choose different
 approaches, we could learn how different methods compare in their ability to
 address a given problem.\footnote{Although we might also confuse learning
-  about method with a discovery that some researchers have excellent judgment
-  and luck.}
+  about method with a discovery that some researchers have excellent
+  methodological judgment and luck.}
 
 If, however, time were short or players difficult to recruit, one could
-approximate such a game by building on \cite{lucasfk2014}. That is, a single
-scholar could generate a true relationship as if kicking off a real method
-game but then write a computer program to compare the effectiveness of
-different algorithms. Imagine that a scholarly literature focusing on 40 cases
-suggests that a complex dependent pattern of binary features $X_{i1}, \ldots,
-X_{iP}$, of a given case $i$, drives outcomes (say, for $P=5$, $Y_i= \left\{
-  (X_{i1} \cdot X_{i2} \cdot X_{i3} ) \text{ OR } ( X_{i4} \cdot X_{i5})
-\right\}$ all $X_{ip}  \in \{0,1\}$ and thus $Y_i \in \{0,1\}$).  Further,
-imagine that three methods suggest themselves as useful a priori: (1) QCA, (2)
-the adaptive lasso and (3) iterative sure independence screening with a SCAD
-plugin (ISIS/SCAD) \citep{fan2008sure}.  \citet{fan2001variable} proved that
-the SCAD penalty would correctly set false parameters to 0 as $n \rightarrow
-\infty$ given a reasonable choice of tuning parameters in contrast to the
-simple lasso proposed by \cite{tibshirani1996regression} --- that is, SCAD has
-an oracle property but the simple lasso does not. Later,
-\citet{zou2006adaptive} showed a modification of the lasso penalty (the
-adaptive lasso) does have an oracle property given well-chosen tuning
-parameters and weights.  And, \citet{fan2008sure} demonstrate that, when the
-number of irrelevant features is much larger than the number of cases (for
-example, when each case has 10,000 measured features but we only observe 50
-cases), a preliminary dimension reduction step (ISIS) improves the performance
-of the SCAD penalty.  Although QCA does not promise to find the truth as
-information increases, it appears well suited to discovering complex
-comparisons and it does not require tuning parameters. This essay presents the
-results from a script that implements a machine version of the method game to
-compare QCA, the adaptive lasso, and ISIS/SCAD.\footnote{Interested readers
-  can download the code from \url{https://github.com/jwbowers/MethodGames}.}
+approximate such a game using a computer rather than a group of scholars:
+\cite{lucasfk2014} provide one example of how to evaluate one method in
+this way. That is, a single scholar could generate a true relationship as if
+kicking off a real method game but then write a computer program to compare
+the effectiveness of different algorithms in a simple situation. Imagine that
+a scholarly literature focusing on 40 cases suggests that a complex dependent
+pattern of binary features $X_{i1}, \ldots, X_{iP}$, of a given case $i$,
+drives outcomes (say, for $P=5$, $Y_i= \left\{ (X_{i1} \cdot X_{i2} \cdot
+  X_{i3} ) \text{ OR } ( X_{i4} \cdot X_{i5}) \right\}$ all $X_{ip}  \in
+\{0,1\}$ and thus $Y_i \in \{0,1\}$).  Further, imagine that three methods
+suggest themselves as useful a priori: (1) QCA, (2) the adaptive lasso and (3)
+iterative sure independence screening with a SCAD plugin (ISIS/SCAD)
+\citep{fan2008sure}.  \citet{fan2001variable} proved that the SCAD penalty
+would correctly set false parameters to 0 as $n \rightarrow \infty$ given a
+reasonable choice of tuning parameters in contrast to the simple lasso
+proposed by \cite{tibshirani1996regression} --- that is, SCAD has an oracle
+property but the simple lasso does not. Later, \citet{zou2006adaptive} showed
+a modification of the lasso penalty (the adaptive lasso) does have an oracle
+property given well-chosen tuning parameters and weights.  And,
+\citet{fan2008sure} demonstrate that, when the number of irrelevant features
+is much larger than the number of cases (for example, when each case has 4000
+measured features but we only observe 40 cases), a preliminary dimension
+reduction step (ISIS) improves the performance of the SCAD penalty.  Although
+QCA does not promise to find the truth as information increases, it appears,
+prima facie, well suited to discovering complex comparisons and it does not
+require tuning parameters. This essay presents the results from a script that
+implements a machine version of the method game to compare QCA, the adaptive
+lasso, and ISIS/SCAD.\footnote{Interested readers can download the code from
+  \url{https://github.com/jwbowers/MethodGames}.}
 
 Notice that this game is relatively easy. The case-knowledge available is only
 that the causal features involve the $X$'s and the outcomes are recorded in
@@ -120,31 +138,47 @@ approaches to seek the truth.  The script runs two contests. The easier of the
 two games presents players with a five column dataset: each column represents
 a part of the truth, and players focus on finding the true combinations of the
 existing features.  The hard game differs from the easy game only in that the
-data set contains 10 irrelevant case features in addition to the original 5.  The
-script counts a player as successful if it found the truth and only the truth.
-In the easy game, QCA, the adaptive lasso, and ISIS/SCAD found the truth for
-18\%, 82\%, and 96\% of the players respectively. In the hard game, QCA, the
-adaptive lasso, and ISIS/SCAD found the truth for 0\%, 33\%, and 61\% of the
-players respectively.
+data set contains 10 irrelevant case features in addition to the original 5.
+The script counts a player as successful if it found the truth and only the
+truth.  In the easy game, QCA, the adaptive lasso, and ISIS/SCAD found the
+truth and only the truth for 18\%, 82\%, and 96\% of the players respectively.
+In the hard game, QCA, the adaptive lasso, and ISIS/SCAD found the truth and
+only the truth for 0\%, 33\%, and 61\% of the players respectively. 
 
-These results do not suggest that we should discard QCA and the adaptive lasso
-in favor of ISIS/SCAD.  A large and growing literature both criticizes and
-builds on the adaptive lasso. For example, if the features are highly
-inter-dependent, we might prefer adaptive versions of the fused lasso
-\citep{rinaldo2009properties}, the grouped lasso \citep{wang2008note}, or the
-elastic net \citep{ghosh2011grouped, zou2004regression}. And future
-methodology building on the simple QCA might adapt insights from machine
-learning to overcome current shortcomings or advise against the use of QCA for
-particular designs and data.  Most scholars would prefer a technique that
-recovers the truth more than 60\% of the time, so one might use these results
-to motivate work to improve the performance of the ISIS/SCAD or to find a
-substitute. Obviously, a real competition with skilled human players with
-excellent judgment might have produced different results.  After all, those
-who investigate and modify the script will notice little expertise and craft
-in use of the techniques: for example, the tuning parameters for the adaptive
-lasso were chosen fairly naively, only one open-source implementation of QCA
-was used, and many other small but potentially consequential decisions appear
-throughout.
+One should not interpret these results as severe criticism of the adaptive
+lasso or QCA. Remember, that this essay is a proposal for evaluating methods,
+is agnostic to the methods themselves, and proposes a machine-based approach
+only as a low-budget way to approximate the real competition among humans.
+However, this essay \emph{does} claim that all methods must be able to be
+evaluated: as a minimal standard, given a true set of relationships, a good
+method should find the truth. In the machine learning literature, such
+critical evaluation drives innovation. For example, a large and growing
+literature both criticizes and builds on the adaptive lasso. For example, if
+the features are highly inter-dependent, we might prefer adaptive versions of
+the fused lasso \citep{rinaldo2009properties}, the grouped lasso
+\citep{wang2008note}, or the elastic net \citep{ghosh2011grouped,
+  zou2004regression}. And future methodology building on the simple QCA might
+adapt insights from machine learning to overcome current shortcomings or
+advise against the use of QCA for particular designs and data.  Most scholars
+would prefer a technique that recovers the truth more than 60\% of the time,
+so one might use these results to motivate work to improve the performance of
+the ISIS/SCAD or to find a substitute. Obviously, a real competition with
+skilled human players with excellent judgment might have produced different
+results.  After all, those who investigate and modify the script will notice
+little expertise and craft in use of the techniques: for example, the tuning
+parameters for the adaptive lasso were chosen fairly naively, only one
+open-source implementation of QCA was used, and many other small but
+potentially consequential decisions appear throughout. This essay also
+highlights the importance of the real, human-based, game. For example, in this
+example the case knowledge required was simple, and perhaps a scholar might
+have been able to identify the noise variables in some preliminary steps in
+the process if these data arose from real world observations. The fact that
+case knowledge plays a role in the use of pattern recognition/machine learning
+is yet another reason why a human-oriented game would be useful --- as long as
+the humans who were successful in finding the pre-arranged truth were able to
+detail their decisions and reasons for their decisions such that other humans
+could repeat their analyses, we would learn about the world and about the
+method. 
 
 Fruitful communication about methods involves comparing the successes of
 different methods in the hands of different human scholars confronting
@@ -157,9 +191,8 @@ methods and/or to motivate people to engage in a real method game.
 
 
 
-\bibliographystyle{apsr}
-\bibliography{/Users/jwbowers/Documents/PROJECTS/BIB/big}
+\bibliographystyle{asr}
+%\bibliography{/Users/jwbowers/Documents/PROJECTS/BIB/big}
+\bibliography{methodgames}
 \end{document}
 
-
-[^2]: 
