@@ -65,7 +65,9 @@ fitfn <- function(y, X, DAT, thetruth) {
     ## Represent thetruth in ways that can be compared to the output of the learners
     truthparts <- gsub("\\s", "", strsplit(thetruth, "|", fixed = TRUE)[[1]])
     truthpartstmp <- gsub("*", ":", truthparts, fixed = TRUE)  ## for models using ':' rather than '*'
-
+    ## Identify any columns in X with no variance to remove later
+    novarX<-apply(X,2,var)
+    
     ## Adaptive Lasso (L1-penalized logistic regression weighted by an L2-penalized
     ## logistic regression) Choose lambda by minimizing misclassification in k-fold
     ## cross-validation
@@ -116,7 +118,7 @@ fitfn <- function(y, X, DAT, thetruth) {
 
     ## ISIS/SCAD
     options(warn = -1)  ## annoying warnings from glm.fit()
-    thesis <- try(SIS(x = X, y = y, family = "binomial", iter.max=100), silent = TRUE)
+    thesis <- try(SIS(x = X[,novarX!=0], y = y, family = "binomial", iter.max=100), silent = TRUE)
     options(warn = 0)  ## turn back on default warning behavior
 
     if (inherits(thesis, "try-error")) {
@@ -127,23 +129,23 @@ fitfn <- function(y, X, DAT, thetruth) {
     }
 
     ## LM
-    thelm <- try(lm.fit(x = X, y = y))
+    thelm <- try(lm.fit(x = X[,novarX!=0], y = y))
     if (inherits(thelm, "try-error")) {
         lmfound <- NA
     } else {
       thelm.coef <- coef(thelm)
       nonzerolm.coef <- names(thelm.coef[zapsmall(thelm.coef,digits=10) !=0 & !is.na(thelm.coef)])
-      lmfound <- setequal(truthpartstmp, thelm.coef)
+      lmfound <- setequal(truthpartstmp, nonzerolm.coef)
     }
 
     ## GLM
-    theglm <- try(glm.fit(x = X, y = y, family=binomial(link="logit")))
+    theglm <- try(glm.fit(x = X[,novarX!=0], y = y, family=binomial(link="logit")))
     if (inherits(theglm, "try-error")) {
         glmfound <- NA
     } else {
       theglm.coef <- coef(theglm)
       nonzeroglm.coef <- names(theglm.coef[zapsmall(theglm.coef,digits=10) !=0 & !is.na(theglm.coef)])
-      glmfound <- setequal(truthpartstmp, theglm.coef)
+      glmfound <- setequal(truthpartstmp, nonzeroglm.coef)
     }
 
     ## KRLS may be particularly promising for continuous features
@@ -195,6 +197,7 @@ thetruth <- "V1*V2*V3 | V4*V5"
 nfeatures <- 5
 N <- 40
 
+
 easygamefn <- gamefn.maker(nfeatures, N, thetruth, 4)
 cmp.easygamefn <- cmpfun(easygamefn, options = list(optimize = 3))  ## see if byte-compiling speeds up the runs
 
@@ -241,4 +244,3 @@ apply(hardgameresults.arr, 1, function(x) {
 })  ## what proportion NAs in each method?
 
 save(hardgameresults, file = "hardgameresults.rda")
-
