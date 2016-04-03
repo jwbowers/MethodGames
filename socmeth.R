@@ -9,7 +9,7 @@ neededpkgs <- c("QCA", "glmnet", "SIS", "compiler", "parallel", "data.table")
 localpkgs <- installed.packages()
 to.install <- neededpkgs[!(neededpkgs %in% localpkgs[, "Package"])]
 if (length(to.install) > 0) {
-    install.packages(to.install, dependencies = TRUE)
+    install.packages(to.install, dependencies = TRUE, repos= "http://cran.rstudio.org")
 }
 
 ## Now load the packages
